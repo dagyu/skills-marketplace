@@ -21,13 +21,15 @@ The CLI owns:
 
 ## Layer 2 — the skills (process)
 
-Four skills, packaged as a Claude Code plugin, guide the agent:
+Five skills, packaged as a Claude Code plugin, guide the agent:
 
 - **workflow-overview** — injected at session start; explains the phases and the
   CLI, and points at the manifesto.
 - **brainstorming** — rough idea → agreed design note.
 - **planning** — design note → concrete tasks (then strips the note).
 - **implementation** — task → TDD → developer confirmation → docs → commit.
+- **internals** — read `extras/internals/INTERNALS.md` to find the right code
+  before editing, and keep that map honest when the structure changes.
 
 The skills enforce hard gates between phases (e.g. no production code without a
 failing test, no commit before docs are updated and the developer confirms).
@@ -35,9 +37,11 @@ failing test, no commit before docs are updated and the developer confirms).
 ## How the two layers meet
 
 The skills tell the agent *what to do and in what order*; the CLI gives it a safe,
-structured place to *record the work*. The manifesto
-(`extras/manifesto/MANIFESTO.md`) sits above both as the source of project
-guidelines that every phase must honour.
+structured place to *record the work*. Two project-owned documents sit above both:
+the manifesto (`extras/manifesto/MANIFESTO.md`) is the source of guidelines every
+phase must honour, and the internals map (`extras/internals/INTERNALS.md`) — an
+extension of `CLAUDE.md` — tells the agent where the code lives so changes land in
+the right place.
 
 See [cli.md](cli.md) for the command reference and [skills.md](skills.md) for the
 skill details.

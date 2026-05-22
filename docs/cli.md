@@ -23,8 +23,9 @@ self-contained.
 
 Scaffold the workflow structure into the current project: `extras/brainstorm/`,
 `extras/tasks/` (with an empty `data.json`), `extras/manifesto/MANIFESTO.md`,
-`docs/`, and a starter `README.md`. Idempotent — existing files are never
-overwritten.
+`extras/internals/INTERNALS.md` (the code-structure map), `docs/`, a starter
+`README.md`, and a `CLAUDE.md` that points the agent at the manifesto and the
+internals map. Idempotent — existing files are never overwritten.
 
 ## `workflow brainstorm`
 

@@ -36,11 +36,19 @@ describe("workflow init", () => {
     expect(existsSync(join(project, "extras/brainstorm"))).toBe(true);
     expect(existsSync(join(project, "extras/tasks/data.json"))).toBe(true);
     expect(existsSync(join(project, "extras/manifesto/MANIFESTO.md"))).toBe(true);
+    expect(existsSync(join(project, "extras/internals/INTERNALS.md"))).toBe(true);
     expect(existsSync(join(project, "docs/README.md"))).toBe(true);
     expect(existsSync(join(project, "README.md"))).toBe(true);
+    expect(existsSync(join(project, "CLAUDE.md"))).toBe(true);
 
     const second = await wf("init");
     expect(second.stdout).toContain("already exists");
+  });
+
+  test("scaffolded CLAUDE.md points the agent at the internals guide", async () => {
+    await wf("init");
+    const claude = readFileSync(join(project, "CLAUDE.md"), "utf8");
+    expect(claude).toContain("extras/internals/INTERNALS.md");
   });
 });
 

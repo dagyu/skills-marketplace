@@ -14,14 +14,18 @@ export interface ProjectPaths {
   dataFile: string;
   manifestoDir: string;
   manifestoFile: string;
+  internalsDir: string;
+  internalsFile: string;
   docsDir: string;
   readmeFile: string;
+  claudeFile: string;
 }
 
 export function resolveProjectPaths(root: string = process.cwd()): ProjectPaths {
   const extrasDir = join(root, "extras");
   const tasksDir = join(extrasDir, "tasks");
   const manifestoDir = join(extrasDir, "manifesto");
+  const internalsDir = join(extrasDir, "internals");
   return {
     root,
     extrasDir,
@@ -30,7 +34,10 @@ export function resolveProjectPaths(root: string = process.cwd()): ProjectPaths 
     dataFile: join(tasksDir, "data.json"),
     manifestoDir,
     manifestoFile: join(manifestoDir, "MANIFESTO.md"),
+    internalsDir,
+    internalsFile: join(internalsDir, "INTERNALS.md"),
     docsDir: join(root, "docs"),
     readmeFile: join(root, "README.md"),
+    claudeFile: join(root, "CLAUDE.md"),
   };
 }

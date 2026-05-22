@@ -32,6 +32,14 @@ Builds one task at a time under strict TDD. The cycle: read the task and manifes
 `docs/`/`README.md`/manifesto → commit (via `cmd-llm-conventional-commit`) → mark
 the task `done`. The Iron Law: no production code without a failing test first.
 
+## internals
+
+Not a phase of its own — it supports the others. Tells the agent to read
+`extras/internals/INTERNALS.md` (the code map, an extension of `CLAUDE.md`) before
+navigating or editing unfamiliar code, to honour the module boundaries it records,
+and to update the map in the same commit whenever a change moves, renames, or adds
+a module. Consulted during implementation; the scaffolded `CLAUDE.md` points here.
+
 ## Authoring conventions
 
 - `name`: lowercase, hyphenated.

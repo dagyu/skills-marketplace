@@ -7,6 +7,8 @@ import { resolveProjectPaths } from "../lib/paths.ts";
 // binary and resolves to the on-disk path when running from source. Each import
 // is the path to the (possibly embedded) file.
 import manifestoTemplate from "../../templates/MANIFESTO.md" with { type: "file" };
+import internalsTemplate from "../../templates/INTERNALS.md" with { type: "file" };
+import claudeTemplate from "../../templates/CLAUDE.md" with { type: "file" };
 import readmeTemplate from "../../templates/README.md" with { type: "file" };
 import docsReadmeTemplate from "../../templates/docs/README.md" with { type: "file" };
 
@@ -53,11 +55,14 @@ export async function runInit(): Promise<void> {
 
   ensureDir(p.brainstormDir);
   ensureDir(p.tasksDir);
+  ensureDir(p.internalsDir);
   ensureDir(p.docsDir);
 
   writeIfAbsent(p.dataFile, JSON.stringify({ nextId: 1, tasks: [] }, null, 2) + "\n");
 
   await copyTemplate(manifestoTemplate, p.manifestoFile);
+  await copyTemplate(internalsTemplate, p.internalsFile);
+  await copyTemplate(claudeTemplate, p.claudeFile);
   await copyTemplate(readmeTemplate, p.readmeFile);
   await copyTemplate(docsReadmeTemplate, join(p.docsDir, "README.md"));
 

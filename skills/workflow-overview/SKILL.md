@@ -21,6 +21,11 @@ project's vision and non-negotiable guidelines. Every brainstorm, plan, and
 implementation must respect it. If a request conflicts with the manifesto, raise
 it with the developer instead of silently violating it.
 
+**Before navigating or editing the codebase, read
+`extras/internals/INTERNALS.md`** — the code map (an extension of `CLAUDE.md`)
+that says where each kind of change lives. Use the **internals** skill to consult
+it and to keep it honest when the structure changes.
+
 ## The `workflow` CLI is the data layer
 
 All brainstorm notes and tasks are managed through the `workflow` CLI — **never
@@ -44,6 +49,8 @@ Run `workflow` with no arguments for full usage.
 - **Idea is rough / not fully specified?** → use the **brainstorming** skill.
 - **Idea is agreed but not broken into work?** → use the **planning** skill.
 - **Tasks exist and you are ready to build?** → use the **implementation** skill.
+- **Need to find or change the right code (or the structure shifted)?** → use the
+  **internals** skill.
 
 ## Hard gates
 

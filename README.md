@@ -27,14 +27,20 @@ guidelines; every phase must respect it.
 ```
 <project>/
 ├── extras/
-│   ├── brainstorm/        # one markdown note per idea
+│   ├── brainstorm/          # one markdown note per idea
 │   ├── tasks/
-│   │   ├── data.json      # task metadata (source of truth)
-│   │   └── <id>-<slug>.md # extended description per task
-│   └── manifesto/MANIFESTO.md
-├── docs/                  # project documentation
+│   │   ├── data.json        # task metadata (source of truth)
+│   │   └── <id>-<slug>.md   # extended description per task
+│   ├── manifesto/MANIFESTO.md   # vision + non-negotiable guidelines
+│   └── internals/INTERNALS.md   # code-structure map for developers/agents
+├── docs/                    # project documentation
+├── CLAUDE.md                # agent guidance; points at the manifesto + internals
 └── README.md
 ```
+
+`extras/internals/INTERNALS.md` is an extension of `CLAUDE.md`: it maps how the
+code is structured and where to make each kind of change, so coding agents reach
+for the right module the first time. The **internals** skill keeps it honest.
 
 ## Install
 
