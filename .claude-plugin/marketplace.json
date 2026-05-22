@@ -1,0 +1,13 @@
+{
+  "name": "workflow",
+  "owner": {
+    "name": "dagyu"
+  },
+  "plugins": [
+    {
+      "name": "workflow",
+      "source": "./",
+      "description": "Brainstorm → plan → implement workflow: a Bun CLI for tasks plus TDD-enforcing skills."
+    }
+  ]
+}

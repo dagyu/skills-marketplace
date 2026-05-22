@@ -1,0 +1,17 @@
+{
+  "name": "workflow",
+  "version": "0.1.0",
+  "type": "module",
+  "description": "A brainstorm → plan → implement workflow: a Bun CLI plus Claude Code skills that raise software-development quality.",
+  "bin": {
+    "workflow": "./src/index.ts"
+  },
+  "scripts": {
+    "test": "bun test",
+    "start": "bun run src/index.ts"
+  },
+  "engines": {
+    "bun": ">=1.0.0"
+  },
+  "license": "MIT"
+}
