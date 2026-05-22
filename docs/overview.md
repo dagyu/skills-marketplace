@@ -14,7 +14,7 @@ The CLI owns:
 
 - **Brainstorm notes** — markdown files in `extras/brainstorm/`.
 - **Tasks** — metadata in `extras/tasks/data.json` plus one extended-description
-  markdown file per task (`extras/tasks/<id>-<slug>.md`).
+  markdown file per task (`extras/tasks/<slug>.md`).
 
 `src/lib/store.ts` (`TaskStore`) is the *only* module that reads or writes
 `data.json`, which keeps the data layer small and unit-testable.

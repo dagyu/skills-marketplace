@@ -30,7 +30,7 @@ guidelines; every phase must respect it.
 │   ├── brainstorm/          # one markdown note per idea
 │   ├── tasks/
 │   │   ├── data.json        # task metadata (source of truth)
-│   │   └── <id>-<slug>.md   # extended description per task
+│   │   └── <slug>.md        # extended description per task
 │   ├── manifesto/MANIFESTO.md   # vision + non-negotiable guidelines
 │   └── internals/INTERNALS.md   # code-structure map for developers/agents
 ├── docs/                    # project documentation

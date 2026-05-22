@@ -28,7 +28,7 @@ describe("TaskStore", () => {
     const b = store.create({ title: "Second task" });
     expect(a.id).toBe(1);
     expect(b.id).toBe(2);
-    expect(a.path).toBe("extras/tasks/1-first-task.md");
+    expect(a.path).toBe("extras/tasks/first-task.md");
     expect(a.status).toBe("todo");
     expect(a.priority).toBe("medium");
     expect(a.labels).toEqual([]);

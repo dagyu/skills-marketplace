@@ -109,9 +109,9 @@ describe("workflow task", () => {
       priority: "high",
       labels: ["ui", "auth"],
       status: "todo",
-      path: "extras/tasks/1-login-form.md",
+      path: "extras/tasks/login-form.md",
     });
-    expect(existsSync(join(project, "extras/tasks/1-login-form.md"))).toBe(true);
+    expect(existsSync(join(project, "extras/tasks/login-form.md"))).toBe(true);
 
     // list
     const list = await wf("task", "list");
@@ -131,7 +131,7 @@ describe("workflow task", () => {
 
     // delete removes data + markdown
     await wf("task", "delete", "1");
-    expect(existsSync(join(project, "extras/tasks/1-login-form.md"))).toBe(false);
+    expect(existsSync(join(project, "extras/tasks/login-form.md"))).toBe(false);
     const empty = await wf("task", "list", "--json");
     expect(JSON.parse(empty.stdout)).toEqual([]);
   });
@@ -141,7 +141,7 @@ describe("workflow task", () => {
     const bodyFile = join(project, "body.md");
     writeFileSync(bodyFile, "# Custom\n\nDetailed spec here.\n");
     await wf("task", "create", "--title", "Has body", "--body-file", bodyFile);
-    const body = readFileSync(join(project, "extras/tasks/1-has-body.md"), "utf8");
+    const body = readFileSync(join(project, "extras/tasks/has-body.md"), "utf8");
     expect(body).toContain("Detailed spec here.");
   });
 

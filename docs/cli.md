@@ -39,7 +39,7 @@ internals map. Idempotent — existing files are never overwritten.
 
 | Command | Description |
 |---|---|
-| `workflow task create --title "<t>" [--description <d>] [--priority low\|medium\|high] [--labels a,b] [--depends-on 1,2] [--body-file <path>]` | Create a task. Assigns the next integer id, writes `extras/tasks/<id>-<slug>.md` (from `--body-file` if given, else a stub), and prints the id. |
+| `workflow task create --title "<t>" [--description <d>] [--priority low\|medium\|high] [--labels a,b] [--depends-on 1,2] [--body-file <path>]` | Create a task. Assigns the next integer id, writes `extras/tasks/<slug>.md` (from `--body-file` if given, else a stub), and prints the id. |
 | `workflow task list [--status <s>] [--priority <p>] [--label <l>] [--json]` | List/filter tasks. The text view shows each task's dependencies; `--json` prints the raw array. |
 | `workflow task get <id> [--json]` | Show a task's metadata and its extended-description body. `--json` includes the body as a field. |
 | `workflow task update <id> [--title --description --priority --labels --depends-on --status]` | Patch fields and bump `updatedAt`. |

@@ -60,7 +60,7 @@ export class TaskStore {
       description: input.description ?? "",
       priority: input.priority ?? "medium",
       labels: input.labels ?? [],
-      path: `extras/tasks/${id}-${slugify(input.title)}.md`,
+      path: `extras/tasks/${slugify(input.title)}.md`,
       status: "todo",
       createdAt: now,
       updatedAt: now,
