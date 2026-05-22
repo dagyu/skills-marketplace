@@ -38,11 +38,17 @@ internals map. Idempotent — existing files are never overwritten.
 
 | Command | Description |
 |---|---|
-| `workflow task create --title "<t>" [--description <d>] [--priority low\|medium\|high] [--labels a,b] [--body-file <path>]` | Create a task. Assigns the next integer id, writes `extras/tasks/<id>-<slug>.md` (from `--body-file` if given, else a stub), and prints the id. |
-| `workflow task list [--status <s>] [--priority <p>] [--label <l>] [--json]` | List/filter tasks. `--json` prints the raw array. |
+| `workflow task create --title "<t>" [--description <d>] [--priority low\|medium\|high] [--labels a,b] [--depends-on 1,2] [--body-file <path>]` | Create a task. Assigns the next integer id, writes `extras/tasks/<id>-<slug>.md` (from `--body-file` if given, else a stub), and prints the id. |
+| `workflow task list [--status <s>] [--priority <p>] [--label <l>] [--json]` | List/filter tasks. The text view shows each task's dependencies; `--json` prints the raw array. |
 | `workflow task get <id> [--json]` | Show a task's metadata and its extended-description body. `--json` includes the body as a field. |
-| `workflow task update <id> [--title --description --priority --labels --status]` | Patch fields and bump `updatedAt`. |
+| `workflow task update <id> [--title --description --priority --labels --depends-on --status]` | Patch fields and bump `updatedAt`. |
 | `workflow task delete <id>` | Remove the task from `data.json` and delete its markdown file. |
+
+`--depends-on` takes a comma-separated list of task ids the task is blocked by
+(e.g. `--depends-on 1,3`). Each id must be a positive integer that refers to an
+existing task and not the task itself, or the command exits non-zero. Omit the
+flag to leave a task independently implementable; on `update`, pass an empty
+value (`--depends-on ""`) to clear an existing dependency list.
 
 ### Task fields (`data.json`)
 
@@ -57,6 +63,7 @@ internals map. Idempotent — existing files are never overwritten.
 | `labels` | string[] | |
 | `path` | string | Project-relative path to the markdown body. |
 | `status` | `todo` \| `in-progress` \| `done` | Defaults to `todo`. |
+| `dependsOn` | number[] | Ids of tasks that must be `done` first. **Absent when the task is ready to build now**; populated only when blocked. |
 | `createdAt` / `updatedAt` | ISO string | |
 
 Invalid enum values and missing required flags exit non-zero with an error on

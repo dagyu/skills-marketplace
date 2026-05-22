@@ -74,6 +74,25 @@ describe("TaskStore", () => {
     expect(store.list({ label: "api" }).map((t) => t.title)).toEqual(["two"]);
   });
 
+  test("create stores dependsOn only when it is non-empty", () => {
+    const a = store.create({ title: "base" });
+    const b = store.create({ title: "needs base", dependsOn: [a.id] });
+    expect(b.dependsOn).toEqual([a.id]);
+    expect("dependsOn" in a).toBe(false);
+    const raw = JSON.parse(readFileSync(dataFile, "utf8"));
+    expect("dependsOn" in raw.tasks[0]).toBe(false);
+    expect(raw.tasks[1].dependsOn).toEqual([a.id]);
+  });
+
+  test("update sets dependsOn and an empty array clears it", () => {
+    const a = store.create({ title: "a" });
+    const b = store.create({ title: "b" });
+    store.update(b.id, { dependsOn: [a.id] });
+    expect(store.get(b.id)?.dependsOn).toEqual([a.id]);
+    store.update(b.id, { dependsOn: [] });
+    expect("dependsOn" in (store.get(b.id) as object)).toBe(false);
+  });
+
   test("a second store instance reads existing data and keeps ids monotonic", () => {
     store.create({ title: "kept" });
     const reopened = new TaskStore(dataFile);

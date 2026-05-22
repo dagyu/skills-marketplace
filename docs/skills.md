@@ -21,16 +21,21 @@ the note is approved.
 ## planning
 
 Distills an approved brainstorm note into concrete, bite-sized tasks created with
-`workflow task create` (preferring `--body-file` for the extended description).
-After creating the tasks it **strips the consumed content from the source note**
-so it is never processed twice. Gate: no production code here.
+`workflow task create` (preferring `--body-file` for the extended description). It
+**only creates and orders tasks — it never writes code**. Tasks are created in
+dependency order, using `--depends-on` to mark a task blocked by earlier ones and
+omitting it when a task is ready to build. After creating the tasks it **strips
+the consumed content from the source note** so it is never processed twice. Gate:
+no production code here.
 
 ## implementation
 
-Builds one task at a time under strict TDD. The cycle: read the task and manifesto
-→ failing test (RED) → minimal code (GREEN) → **developer confirmation** → update
-`docs/`/`README.md`/manifesto → commit (via `cmd-llm-conventional-commit`) → mark
-the task `done`. The Iron Law: no production code without a failing test first.
+Builds one task at a time under strict TDD, **starting only when the developer
+selects a task** (and after confirming its `dependsOn` prerequisites are all
+`done`). The cycle: read the task and manifesto → failing test (RED) → minimal
+code (GREEN) → **developer confirmation** → update `docs/`/`README.md`/manifesto →
+commit (via `cmd-llm-conventional-commit`) → mark the task `done`. The Iron Law:
+no production code without a failing test first.
 
 ## internals
 

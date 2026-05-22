@@ -144,4 +144,40 @@ describe("workflow task", () => {
     expect(res.code).toBe(1);
     expect(res.stderr).toContain("--title is required");
   });
+
+  test("create without --depends-on omits the field; with it populates it", async () => {
+    await wf("init");
+    await wf("task", "create", "--title", "Base");
+    const indep = JSON.parse((await wf("task", "get", "1", "--json")).stdout);
+    expect("dependsOn" in indep).toBe(false);
+
+    await wf("task", "create", "--title", "Dependent", "--depends-on", "1");
+    const dep = JSON.parse((await wf("task", "get", "2", "--json")).stdout);
+    expect(dep.dependsOn).toEqual([1]);
+  });
+
+  test("--depends-on referencing an unknown task fails", async () => {
+    await wf("init");
+    const res = await wf("task", "create", "--title", "Orphan", "--depends-on", "99");
+    expect(res.code).toBe(1);
+    expect(res.stderr).toContain("99");
+  });
+
+  test("update can set and then clear dependsOn", async () => {
+    await wf("init");
+    await wf("task", "create", "--title", "Base");
+    await wf("task", "create", "--title", "Dependent");
+    await wf("task", "update", "2", "--depends-on", "1");
+    expect(JSON.parse((await wf("task", "get", "2", "--json")).stdout).dependsOn).toEqual([1]);
+    await wf("task", "update", "2", "--depends-on", "");
+    expect("dependsOn" in JSON.parse((await wf("task", "get", "2", "--json")).stdout)).toBe(false);
+  });
+
+  test("a task cannot depend on itself", async () => {
+    await wf("init");
+    await wf("task", "create", "--title", "Solo");
+    const res = await wf("task", "update", "1", "--depends-on", "1");
+    expect(res.code).toBe(1);
+    expect(res.stderr).toContain("itself");
+  });
 });

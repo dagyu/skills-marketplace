@@ -14,6 +14,11 @@ export interface Task {
   /** Project-relative path to the extended-description markdown file. */
   path: string;
   status: Status;
+  /**
+   * Ids of tasks that must be `done` before this one can be implemented.
+   * Absent when the task is independently implementable.
+   */
+  dependsOn?: number[];
   /** ISO timestamp. */
   createdAt: string;
   /** ISO timestamp. */
@@ -31,6 +36,7 @@ export interface CreateTaskInput {
   description?: string;
   priority?: Priority;
   labels?: string[];
+  dependsOn?: number[];
 }
 
 export interface UpdateTaskInput {
@@ -39,6 +45,8 @@ export interface UpdateTaskInput {
   priority?: Priority;
   labels?: string[];
   status?: Status;
+  /** Replace the dependency list; an empty array clears it. */
+  dependsOn?: number[];
 }
 
 export interface TaskFilter {

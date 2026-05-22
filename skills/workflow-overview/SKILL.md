@@ -36,10 +36,10 @@ hand-edit `extras/tasks/data.json`**. Key commands:
 | `workflow init` | Scaffold `extras/` and `docs/` into a new project. |
 | `workflow brainstorm new "<title>"` | Create a brainstorm note. |
 | `workflow brainstorm list` | List brainstorm notes. |
-| `workflow task create --title ... [--description --priority --labels --body-file]` | Create a task (prints its id). |
-| `workflow task list [--status --priority --label --json]` | List/filter tasks. |
+| `workflow task create --title ... [--description --priority --labels --depends-on --body-file]` | Create a task (prints its id). `--depends-on 1,2` marks it blocked by those tasks; omit it when the task is ready to build. |
+| `workflow task list [--status --priority --label --json]` | List/filter tasks (shows dependencies). |
 | `workflow task get <id> [--json]` | Show a task and its extended description. |
-| `workflow task update <id> [--status --title ...]` | Update a task. |
+| `workflow task update <id> [--status --depends-on --title ...]` | Update a task. |
 | `workflow task delete <id>` | Delete a task and its markdown file. |
 
 Run `workflow` with no arguments for full usage.

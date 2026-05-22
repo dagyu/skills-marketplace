@@ -17,18 +17,28 @@ how you know it tests the right thing.
 
 ## When to use
 
-- A task exists in `extras/tasks/` and you are ready to build it.
+- **The developer has selected a task to build.** Implementation starts on a
+  developer's say-so for a specific task — do not pick one yourself or start
+  building straight out of planning. If no task has been chosen, run
+  `workflow task list` and ask the developer which to take.
 
 ## The cycle
 
 ```
-pick task ─► RED (failing test) ─► GREEN (code) ─► confirm ─► docs ─► commit ─► done
+selected task ─► check deps ─► RED (failing test) ─► GREEN (code) ─► confirm ─► docs ─► commit ─► done
 ```
 
-1. **Pick the task.** `workflow task list`, then `workflow task get <id>` to read
-   its goal, acceptance criteria, and TDD plan. Re-read
-   `extras/manifesto/MANIFESTO.md` — the code must respect its guidelines. Mark the
-   task started: `workflow task update <id> --status in-progress`.
+1. **Open the selected task.** `workflow task get <id>` to read its goal,
+   acceptance criteria, and TDD plan. Re-read `extras/manifesto/MANIFESTO.md` — the
+   code must respect its guidelines.
+
+   **Check its dependencies first.** If the task has a `dependsOn` list, every
+   listed task must be `done` before you start (`workflow task get <dep>` to
+   confirm). If any prerequisite is not done, **stop** and tell the developer which
+   task must be completed first — do not build on an unfinished prerequisite. A
+   task with no `dependsOn` is ready to build now.
+
+   Then mark it started: `workflow task update <id> --status in-progress`.
 
 2. **Write the test (RED).** Write a test for the next acceptance criterion. Run it
    and **watch it fail for the right reason** (the behaviour is missing, not a typo
@@ -52,6 +62,8 @@ pick task ─► RED (failing test) ─► GREEN (code) ─► confirm ─► do
 
 ## Red flags — STOP and restart the cycle
 
+- You started building a task the developer did not select.
+- You started a task whose `dependsOn` prerequisites are not all `done`.
 - You wrote production code and there is no test that failed first.
 - You never actually ran the test and saw it fail.
 - You are about to commit before the developer confirmed.

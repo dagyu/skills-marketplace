@@ -65,6 +65,7 @@ export class TaskStore {
       createdAt: now,
       updatedAt: now,
     };
+    if (input.dependsOn && input.dependsOn.length > 0) task.dependsOn = input.dependsOn;
     data.tasks.push(task);
     data.nextId = id + 1;
     this.write(data);
@@ -80,6 +81,10 @@ export class TaskStore {
     if (patch.priority !== undefined) task.priority = patch.priority;
     if (patch.labels !== undefined) task.labels = patch.labels;
     if (patch.status !== undefined) task.status = patch.status;
+    if (patch.dependsOn !== undefined) {
+      if (patch.dependsOn.length > 0) task.dependsOn = patch.dependsOn;
+      else delete task.dependsOn;
+    }
     task.updatedAt = new Date().toISOString();
     this.write(data);
     return task;

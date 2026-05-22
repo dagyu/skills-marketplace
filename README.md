@@ -59,9 +59,11 @@ workflow init                                  # scaffold extras/ and docs/
 workflow brainstorm new "Add login"            # create a brainstorm note
 workflow brainstorm list
 workflow task create --title "Login form" --priority high --labels ui,auth
+workflow task create --title "Login API" --depends-on 1   # blocked until #1 is done
 workflow task list [--status --priority --label --json]
 workflow task get <id> [--json]
 workflow task update <id> --status done
+workflow task update <id> --depends-on 1,2                # set/clear dependencies
 workflow task delete <id>
 ```
 
