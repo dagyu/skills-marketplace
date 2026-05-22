@@ -48,6 +48,7 @@ Or run without linking: `bun /path/to/workflow/src/index.ts <command>`.
 ## CLI quick reference
 
 ```bash
+workflow --version                             # print version + build time
 workflow init                                  # scaffold extras/ and docs/
 workflow brainstorm new "Add login"            # create a brainstorm note
 workflow brainstorm list
@@ -59,6 +60,23 @@ workflow task delete <id>
 ```
 
 See [`docs/`](docs/) for full documentation.
+
+## Compile a standalone binary
+
+```bash
+bun run compile            # → dist/workflow
+bun run compile ./bin/wf   # custom output path
+```
+
+This uses `bun build --compile` and stamps the build time into the binary, so
+`workflow --version` reports exactly which build is running:
+
+```
+workflow 0.1.0 (built 2026-05-22T14:05:13.699Z)
+```
+
+When run from source (`bun run src/index.ts`), the build time reads
+`dev (running from source)` instead.
 
 ## Develop
 

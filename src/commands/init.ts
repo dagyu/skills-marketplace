@@ -1,11 +1,26 @@
-import { cpSync, existsSync, mkdirSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { out } from "../lib/cli.ts";
 import { resolveProjectPaths } from "../lib/paths.ts";
 
-const TEMPLATES_DIR = join(import.meta.dir, "..", "..", "templates");
+// Embed the templates with `type: "file"`: Bun bundles them into the compiled
+// binary and resolves to the on-disk path when running from source. Each import
+// is the path to the (possibly embedded) file.
+import manifestoTemplate from "../../templates/MANIFESTO.md" with { type: "file" };
+import readmeTemplate from "../../templates/README.md" with { type: "file" };
+import docsReadmeTemplate from "../../templates/docs/README.md" with { type: "file" };
 
-/** Write a file only if it does not already exist. Reports which path it took. */
+/** Make a directory, reporting whether it was created or already present. */
+function ensureDir(target: string): void {
+  if (existsSync(target)) {
+    out(`  skip   ${target}/ (already exists)`);
+  } else {
+    mkdirSync(target, { recursive: true });
+    out(`  create ${target}/`);
+  }
+}
+
+/** Write a file only if absent. */
 function writeIfAbsent(target: string, contents: string): void {
   if (existsSync(target)) {
     out(`  skip   ${target} (already exists)`);
@@ -16,20 +31,23 @@ function writeIfAbsent(target: string, contents: string): void {
   out(`  create ${target}`);
 }
 
-function ensureDir(target: string): void {
+/** Copy a (possibly embedded) template file to the target if absent. */
+async function copyTemplate(source: string, target: string): Promise<void> {
   if (existsSync(target)) {
-    out(`  skip   ${target}/ (already exists)`);
-  } else {
-    mkdirSync(target, { recursive: true });
-    out(`  create ${target}/`);
+    out(`  skip   ${target} (already exists)`);
+    return;
   }
+  const contents = await Bun.file(source).text();
+  mkdirSync(dirname(target), { recursive: true });
+  writeFileSync(target, contents, "utf8");
+  out(`  create ${target}`);
 }
 
 /**
  * Scaffold the workflow folder structure into the current project. Idempotent:
  * existing files are never overwritten.
  */
-export function runInit(): void {
+export async function runInit(): Promise<void> {
   const p = resolveProjectPaths();
   out("Scaffolding workflow structure:");
 
@@ -39,21 +57,9 @@ export function runInit(): void {
 
   writeIfAbsent(p.dataFile, JSON.stringify({ nextId: 1, tasks: [] }, null, 2) + "\n");
 
-  // Manifesto, README and docs are copied from the bundled templates.
-  copyTemplate("MANIFESTO.md", p.manifestoFile);
-  copyTemplate("README.md", p.readmeFile);
-  copyTemplate(join("docs", "README.md"), join(p.docsDir, "README.md"));
+  await copyTemplate(manifestoTemplate, p.manifestoFile);
+  await copyTemplate(readmeTemplate, p.readmeFile);
+  await copyTemplate(docsReadmeTemplate, join(p.docsDir, "README.md"));
 
   out("\nDone. Start with the brainstorming skill, then planning, then implementation.");
-}
-
-function copyTemplate(relativeTemplate: string, target: string): void {
-  if (existsSync(target)) {
-    out(`  skip   ${target} (already exists)`);
-    return;
-  }
-  const source = join(TEMPLATES_DIR, relativeTemplate);
-  mkdirSync(dirname(target), { recursive: true });
-  cpSync(source, target);
-  out(`  create ${target}`);
 }

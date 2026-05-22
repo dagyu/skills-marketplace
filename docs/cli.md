@@ -2,6 +2,23 @@
 
 All commands operate on the current working directory's `extras/` and `docs/`.
 
+## `workflow --version` (`-v`)
+
+Print the version and the build time, e.g.
+`workflow 0.1.0 (built 2026-05-22T14:05:13.699Z)`. The version comes from
+`package.json` (single source of truth). The build time is injected at compile
+time via `bun build --compile --define __BUILD_TIME__=…` (see
+[Compiling](#compiling)); running from source reports
+`dev (running from source)`.
+
+## Compiling
+
+`bun run compile [outfile]` (default `dist/workflow`) builds a standalone
+executable with `bun build --compile`. `scripts/compile.ts` stamps the current
+ISO timestamp into the binary. Templates used by `workflow init` are embedded into
+the binary via `with { type: "file" }` imports, so the compiled binary is fully
+self-contained.
+
 ## `workflow init`
 
 Scaffold the workflow structure into the current project: `extras/brainstorm/`,

@@ -3,6 +3,7 @@ import { runBrainstorm } from "./commands/brainstorm.ts";
 import { runInit } from "./commands/init.ts";
 import { runTask } from "./commands/task.ts";
 import { CliError, out } from "./lib/cli.ts";
+import { versionString } from "./version.ts";
 
 const USAGE = `workflow — a brainstorm → plan → implement workflow CLI
 
@@ -11,14 +12,22 @@ Usage:
   workflow brainstorm <cmd>     Manage brainstorm notes (new, list)
   workflow task <cmd>           Manage tasks (create, list, get, update, delete)
 
+Options:
+  -v, --version                 Print the version and build time
+  -h, --help                    Print this help
+
 Run a subcommand with no arguments to see its own usage.`;
 
-function main(argv: string[]): number {
+async function main(argv: string[]): Promise<number> {
   const [command, ...rest] = argv;
   try {
     switch (command) {
+      case "-v":
+      case "--version":
+        out(versionString());
+        return 0;
       case "init":
-        runInit();
+        await runInit();
         return 0;
       case "brainstorm":
         runBrainstorm(rest);
@@ -45,4 +54,4 @@ function main(argv: string[]): number {
   }
 }
 
-process.exit(main(process.argv.slice(2)));
+process.exit(await main(process.argv.slice(2)));
