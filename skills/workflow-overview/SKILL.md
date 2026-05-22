@@ -36,13 +36,19 @@ hand-edit `extras/tasks/data.json`**. Key commands:
 | `workflow init` | Scaffold `extras/` and `docs/` into a new project. |
 | `workflow brainstorm new "<title>"` | Create a brainstorm note. |
 | `workflow brainstorm list` | List brainstorm notes. |
+| `workflow brainstorm delete "<name>"` | Delete a note once its content has been planned into tasks. |
 | `workflow task create --title ... [--description --priority --labels --depends-on --body-file]` | Create a task (prints its id). `--depends-on 1,2` marks it blocked by those tasks; omit it when the task is ready to build. |
 | `workflow task list [--status --priority --label --json]` | List/filter tasks (shows dependencies). |
 | `workflow task get <id> [--json]` | Show a task and its extended description. |
 | `workflow task update <id> [--status --depends-on --title ...]` | Update a task. |
-| `workflow task delete <id>` | Delete a task and its markdown file. |
+| `workflow task delete <id>` | Delete a task and its markdown file (do this once it is implemented and committed). |
 
 Run `workflow` with no arguments for full usage.
+
+The brainstorm and task stores are **queues, not archives**: planning removes
+converted content from brainstorm notes (deleting a note once it is fully
+consumed), and implementation deletes each task once it is committed. Keeping them
+clear keeps every later step more precise.
 
 ## Which skill, when
 

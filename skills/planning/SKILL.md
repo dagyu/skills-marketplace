@@ -53,10 +53,17 @@ here", stop: capture it as a task instead.
    *direct* prerequisites, not transitive ones. You can also set or change them
    later with `workflow task update <id> --depends-on <id,...>` (an empty value
    clears them).
-5. **Strip the consumed content from the brainstorm note.** Edit the source
-   `extras/brainstorm/<note>.md` to remove the parts now captured as tasks. If the
-   whole note is consumed, leave a short pointer (e.g. "Planned into tasks #1–#4")
-   or delete the file. The brainstorm folder is a queue, not an archive.
+5. **Remove the converted content from the brainstorm note.** The brainstorm
+   folder is a queue, not an archive — nothing that has become a task should
+   linger in it.
+   - If the **whole** note was turned into tasks, delete it:
+     `workflow brainstorm delete "<note title or slug>"`.
+   - If only **part** was converted, edit `extras/brainstorm/<note>.md` to remove
+     exactly the parts now captured as tasks, leaving only the not-yet-planned
+     content for a later planning pass.
+
+   Do not leave "planned into #1–#4" pointers behind — the tasks are the record
+   now. A clearer brainstorm folder makes the next planning pass more precise.
 6. **Review.** Run `workflow task list` (it shows each task's dependencies) and
    confirm the tasks together cover the note's goal with no gaps and no leftover
    unplanned content. Check the dependency order: at least one task should be

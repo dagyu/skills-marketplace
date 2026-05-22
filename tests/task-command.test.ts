@@ -65,6 +65,20 @@ describe("workflow brainstorm", () => {
     const listed = await wf("brainstorm", "list");
     expect(listed.stdout).toContain("Add Login");
   });
+
+  test("delete removes a note (by title or slug) and errors when missing", async () => {
+    await wf("init");
+    await wf("brainstorm", "new", "Add Login");
+    expect(existsSync(join(project, "extras/brainstorm/add-login.md"))).toBe(true);
+
+    const del = await wf("brainstorm", "delete", "Add Login");
+    expect(del.code).toBe(0);
+    expect(existsSync(join(project, "extras/brainstorm/add-login.md"))).toBe(false);
+
+    const again = await wf("brainstorm", "delete", "add-login");
+    expect(again.code).toBe(1);
+    expect(again.stderr).toContain("add-login");
+  });
 });
 
 describe("workflow task", () => {

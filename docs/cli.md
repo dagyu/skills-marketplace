@@ -33,6 +33,7 @@ internals map. Idempotent — existing files are never overwritten.
 |---|---|
 | `workflow brainstorm new "<title>"` | Create `extras/brainstorm/<slug>.md` seeded with the title heading. Prints the path. |
 | `workflow brainstorm list` | List notes with their titles. |
+| `workflow brainstorm delete "<name>"` | Delete `extras/brainstorm/<slug>.md` (accepts the note's title or slug). Errors non-zero if no such note exists. Used by planning to clear a note once its content has become tasks. |
 
 ## `workflow task`
 

@@ -16,8 +16,8 @@ layers:
 | Phase | What happens | Output |
 |---|---|---|
 | **Brainstorm** | Refine a rough idea into an agreed design. | A markdown note in `extras/brainstorm/`. |
-| **Plan** | Distill the note into concrete, bite-sized tasks; strip the consumed content from the note. | Tasks in `extras/tasks/` (`data.json` + one markdown body per task). |
-| **Implement** | TDD a task: failing test → code → confirm → docs → commit. | Tested code, updated docs, one commit. |
+| **Plan** | Distill the note into concrete, ordered tasks, then remove the converted content from the note (deleting it if fully consumed). | Tasks in `extras/tasks/` (`data.json` + one markdown body per task); a trimmed or deleted note. |
+| **Implement** | TDD a developer-selected task: failing test → code → confirm → docs → commit → delete the task. | Tested code, updated docs, one commit; the finished task removed. |
 
 `extras/manifesto/MANIFESTO.md` holds the project's vision and non-negotiable
 guidelines; every phase must respect it.
@@ -58,6 +58,7 @@ workflow --version                             # print version + build time
 workflow init                                  # scaffold extras/ and docs/
 workflow brainstorm new "Add login"            # create a brainstorm note
 workflow brainstorm list
+workflow brainstorm delete "Add login"         # remove a note once it is planned
 workflow task create --title "Login form" --priority high --labels ui,auth
 workflow task create --title "Login API" --depends-on 1   # blocked until #1 is done
 workflow task list [--status --priority --label --json]
