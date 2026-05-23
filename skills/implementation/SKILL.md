@@ -39,10 +39,10 @@ how you know it tests the right thing.
 ## The cycle
 
 ```
-check lock ─► check deps ─► acquire ─► RED (test) ─► GREEN (code) ─► confirm ─► docs/internals ─► commit ─► delete task
+check lock ─► check deps ─► ASK to proceed ─► acquire ─► RED (test) ─► GREEN (code) ─► confirm ─► docs/internals ─► commit ─► delete task
 ```
 
-1. **Open the selected task and acquire the lock.** First run `workflow task
+1. **Open the selected task and check it can start.** First run `workflow task
    current` (see "One task at a time" above) — if a *different* task is in progress,
    stop. Then `workflow task get <id>` to read its goal, acceptance criteria, and
    TDD plan, and re-read `extras/manifesto/MANIFESTO.md` — the code must respect its
@@ -50,29 +50,33 @@ check lock ─► check deps ─► acquire ─► RED (test) ─► GREEN (code
 
    **Check its dependencies.** A task with no `dependsOn` is ready now. For each id
    in `dependsOn`, the prerequisite is satisfied if it is `done` **or no longer
-   exists** — finished tasks are deleted (step 6), so a `dependsOn` id that
+   exists** — finished tasks are deleted (step 7), so a `dependsOn` id that
    `workflow task get` cannot find means that work was completed and cleaned up. If
    any prerequisite still exists and is **not** `done`, **stop** and tell the
    developer which task must be completed first — do not build on an unfinished
    prerequisite.
 
-   Then take the lock: `workflow task update <id> --status in-progress` (this
+2. **Explicitly ask the developer to proceed.** This is a gate, separate from the
+   lock check. Even once the task is selected, unlocked, and unblocked, **ask
+   plainly — e.g. "Proceed with implementing #N — <title>?" — and wait for an
+   explicit yes.** Do not acquire the lock or write anything until they confirm.
+   Only then take the lock: `workflow task update <id> --status in-progress` (this
    fails if another task is already in progress).
 
-2. **Write the test (RED).** Write a test for the next acceptance criterion. Run it
+3. **Write the test (RED).** Write a test for the next acceptance criterion. Run it
    and **watch it fail for the right reason** (the behaviour is missing, not a typo
    or import error). If it passes, the test is wrong — fix it.
 
-3. **Write the code (GREEN).** Write the minimum code to make the test pass. No
-   speculative extras (YAGNI). Run the test and watch it pass. Repeat steps 2–3 for
+4. **Write the code (GREEN).** Write the minimum code to make the test pass. No
+   speculative extras (YAGNI). Run the test and watch it pass. Repeat steps 3–4 for
    each acceptance criterion.
 
-4. **Prompt for confirmation.** When the task's behaviour is complete, show that
+5. **Prompt for confirmation.** When the task's behaviour is complete, show that
    the tests pass and summarise the change. **Wait for the developer to confirm**
    the implementation is accepted before touching any metadata files. This is a
    gate — do not proceed to docs/internals or commit without it.
 
-5. **Update the right metadata files (docs and/or internals).** Once confirmed,
+6. **Update the right metadata files (docs and/or internals).** Once confirmed,
    decide *what the change affected* and update accordingly, in the same change as
    the code:
    - **`docs/` and `README.md`** — when the change affects **external usage**: what
@@ -89,7 +93,7 @@ check lock ─► check deps ─► acquire ─► RED (test) ─► GREEN (code
    to update** rather than guessing or skipping. Keep every file honest. If nothing
    genuinely needs updating, say so explicitly.
 
-6. **Ask to commit, then commit and delete the task.** After the metadata files are
+7. **Ask to commit, then commit and delete the task.** After the metadata files are
    updated, **ask the developer for confirmation to commit.** On their go-ahead, use
    the conventional-commit skill (`cmd-llm-conventional-commit`) for a single commit
    covering the code, tests, and doc/internals updates. Once committed the work
@@ -101,6 +105,8 @@ check lock ─► check deps ─► acquire ─► RED (test) ─► GREEN (code
 ## Red flags — STOP and restart the cycle
 
 - You started building a task the developer did not select.
+- You acquired the lock or started building without **explicitly asking the
+  developer to proceed** and getting a yes.
 - You began a second task while another is still `in-progress` (check
   `workflow task current` first — only one task at a time).
 - You started a task while one of its `dependsOn` prerequisites still exists and
