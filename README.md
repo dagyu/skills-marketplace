@@ -62,6 +62,7 @@ workflow brainstorm delete "Add login"         # remove a note once it is planne
 workflow task create --title "Login form" --priority high --labels ui,auth
 workflow task create --title "Login API" --depends-on 1   # blocked until #1 is done
 workflow task list [--status --priority --label --json]
+workflow task current                          # the in-progress task (the lock)
 workflow task get <id> [--json]
 workflow task update <id> --status done
 workflow task update <id> --depends-on 1,2                # set/clear dependencies

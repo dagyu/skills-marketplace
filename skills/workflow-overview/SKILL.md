@@ -39,8 +39,9 @@ hand-edit `extras/tasks/data.json`**. Key commands:
 | `workflow brainstorm delete "<name>"` | Delete a note once its content has been planned into tasks. |
 | `workflow task create --title ... [--description --priority --labels --depends-on --body-file]` | Create a task (prints its id). `--depends-on 1,2` marks it blocked by those tasks; omit it when the task is ready to build. |
 | `workflow task list [--status --priority --label --json]` | List/filter tasks (shows dependencies). |
+| `workflow task current` | Show the task in progress (the lock), or report that none is. Check before starting a new one. |
 | `workflow task get <id> [--json]` | Show a task and its extended description. |
-| `workflow task update <id> [--status --depends-on --title ...]` | Update a task. |
+| `workflow task update <id> [--status --depends-on --title ...]` | Update a task. Setting `--status in-progress` fails if another task already holds it. |
 | `workflow task delete <id>` | Delete a task and its markdown file (do this once it is implemented and committed). |
 
 Run `workflow` with no arguments for full usage.
@@ -62,4 +63,7 @@ clear keeps every later step more precise.
 
 - Do not start planning until the developer has approved a brainstorm.
 - Do not write production code without a failing test first (see implementation).
-- Do not commit until tests pass, the developer confirms, and docs are updated.
+- Do not start a task while another is `in-progress` — only one task at a time
+  (check `workflow task current`).
+- Do not commit until tests pass, the developer confirms, and docs/internals are
+  updated. After committing, delete the finished task.

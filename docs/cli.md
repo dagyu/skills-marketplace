@@ -41,6 +41,7 @@ internals map. Idempotent — existing files are never overwritten.
 |---|---|
 | `workflow task create --title "<t>" [--description <d>] [--priority low\|medium\|high] [--labels a,b] [--depends-on 1,2] [--body-file <path>]` | Create a task. Assigns the next integer id, writes `extras/tasks/<slug>.md` (from `--body-file` if given, else a stub), and prints the id. |
 | `workflow task list [--status <s>] [--priority <p>] [--label <l>] [--json]` | List/filter tasks. The text view shows each task's dependencies; `--json` prints the raw array. |
+| `workflow task current` | Show the task currently `in-progress` (the lock), or report that none is. |
 | `workflow task get <id> [--json]` | Show a task's metadata and its extended-description body. `--json` includes the body as a field. |
 | `workflow task update <id> [--title --description --priority --labels --depends-on --status]` | Patch fields and bump `updatedAt`. |
 | `workflow task delete <id>` | Remove the task from `data.json` and delete its markdown file. |
@@ -69,3 +70,11 @@ value (`--depends-on ""`) to clear an existing dependency list.
 
 Invalid enum values and missing required flags exit non-zero with an error on
 stderr.
+
+### The in-progress lock
+
+`in-progress` acts as a lock: at most one task may hold it, enforcing one task at
+a time. `workflow task update <id> --status in-progress` exits non-zero if a
+*different* task is already in progress (re-setting the same task is allowed). Use
+`workflow task current` to see the holder before starting a new task; the lock is
+released when the in-progress task is moved off `in-progress` or deleted.

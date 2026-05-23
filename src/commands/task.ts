@@ -9,6 +9,7 @@ import { PRIORITIES, STATUSES, type Task } from "../types.ts";
 const USAGE = `Usage:
   workflow task create --title <t> [--description <d>] [--priority low|medium|high] [--labels a,b] [--depends-on 1,2] [--body-file <path>]
   workflow task list [--status <s>] [--priority <p>] [--label <l>] [--json]
+  workflow task current
   workflow task get <id> [--json]
   workflow task update <id> [--title <t>] [--description <d>] [--priority <p>] [--labels a,b] [--depends-on 1,2] [--status <s>]
   workflow task delete <id>`;
@@ -48,6 +49,8 @@ export function runTask(args: string[]): void {
       return taskCreate(rest);
     case "list":
       return taskList(rest);
+    case "current":
+      return taskCurrent();
     case "get":
       return taskGet(rest);
     case "update":
@@ -141,6 +144,17 @@ function taskList(rest: string[]): void {
 /** Render a task's dependencies as `#1, #2`, or "" when it has none. */
 function formatDeps(t: Task): string {
   return (t.dependsOn ?? []).map((d) => `#${d}`).join(", ");
+}
+
+/** Report the task currently in progress — the lock that blocks starting another. */
+function taskCurrent(): void {
+  const [task] = store().list({ status: "in-progress" });
+  if (!task) {
+    out("No task in progress. You may start one.");
+    return;
+  }
+  out(`In progress: #${task.id}  ${task.title}`);
+  out("Finish (and delete) it before starting another — one task at a time.");
 }
 
 function taskGet(rest: string[]): void {

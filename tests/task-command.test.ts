@@ -194,4 +194,21 @@ describe("workflow task", () => {
     expect(res.code).toBe(1);
     expect(res.stderr).toContain("itself");
   });
+
+  test("only one task can be in progress (lock) and `current` reports it", async () => {
+    await wf("init");
+    await wf("task", "create", "--title", "First");
+    await wf("task", "create", "--title", "Second");
+
+    expect((await wf("task", "current")).stdout).toContain("No task in progress");
+
+    expect((await wf("task", "update", "1", "--status", "in-progress")).code).toBe(0);
+    const cur = await wf("task", "current");
+    expect(cur.stdout).toContain("#1");
+    expect(cur.stdout).toContain("First");
+
+    const blocked = await wf("task", "update", "2", "--status", "in-progress");
+    expect(blocked.code).toBe(1);
+    expect(blocked.stderr).toContain("#1");
+  });
 });

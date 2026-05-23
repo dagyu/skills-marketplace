@@ -33,13 +33,17 @@ production code here.
 ## implementation
 
 Builds one task at a time under strict TDD, **starting only when the developer
-selects a task** (and after confirming each `dependsOn` prerequisite is `done` or
-already deleted). The cycle: read the task and manifesto → failing test (RED) →
-minimal code (GREEN) → **developer confirmation** → update
-`docs/`/`README.md`/manifesto → commit (via `cmd-llm-conventional-commit`) →
-**delete the finished task** (`workflow task delete`). Completed tasks are not
-kept; git history is the record. The Iron Law: no production code without a
-failing test first.
+selects a task** — and only when no other task is `in-progress`, since that status
+is a one-at-a-time **lock** the CLI enforces (`workflow task current` reports the
+holder). The cycle: check the lock → confirm each `dependsOn` prerequisite is
+`done` or already deleted → acquire (`--status in-progress`) → failing test (RED) →
+minimal code (GREEN) → **developer confirmation** → update the right metadata
+(**`docs/`/`README.md`** for external usage, **`extras/internals/INTERNALS.md`**
+for code structure, both when relevant, the manifesto if a guideline changed;
+asking the developer if it is unclear) → **ask to commit** →
+`cmd-llm-conventional-commit` → **delete the finished task** (`workflow task
+delete`, which releases the lock). Completed tasks are not kept; git history is the
+record. The Iron Law: no production code without a failing test first.
 
 ## internals
 

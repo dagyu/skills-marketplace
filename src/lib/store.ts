@@ -1,5 +1,6 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname } from "node:path";
+import { CliError } from "./cli.ts";
 import { slugify } from "./slug.ts";
 import type {
   CreateTaskInput,
@@ -76,6 +77,17 @@ export class TaskStore {
     const data = this.read();
     const task = data.tasks.find((t) => t.id === id);
     if (!task) return undefined;
+    // The in-progress status is a lock: at most one task may hold it, so only one
+    // task is implemented at a time. Re-setting the same task is allowed.
+    if (patch.status === "in-progress") {
+      const holder = data.tasks.find((t) => t.status === "in-progress" && t.id !== id);
+      if (holder) {
+        throw new CliError(
+          `Cannot start #${id}: task #${holder.id} ("${holder.title}") is already in progress. ` +
+            `Finish (and delete) it first — one task at a time.`,
+        );
+      }
+    }
     if (patch.title !== undefined) task.title = patch.title;
     if (patch.description !== undefined) task.description = patch.description;
     if (patch.priority !== undefined) task.priority = patch.priority;

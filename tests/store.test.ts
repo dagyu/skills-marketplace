@@ -57,6 +57,19 @@ describe("TaskStore", () => {
     expect(updated?.updatedAt).not.toBe(a.updatedAt);
   });
 
+  test("enforces one in-progress task at a time (lock)", () => {
+    const a = store.create({ title: "a" });
+    const b = store.create({ title: "b" });
+    store.update(a.id, { status: "in-progress" });
+    // a different task cannot be started while a is in progress
+    expect(() => store.update(b.id, { status: "in-progress" })).toThrow();
+    // re-setting the same in-progress task is allowed (you can continue it)
+    expect(() => store.update(a.id, { status: "in-progress" })).not.toThrow();
+    // once a is released, b can acquire the lock
+    store.update(a.id, { status: "done" });
+    expect(() => store.update(b.id, { status: "in-progress" })).not.toThrow();
+  });
+
   test("delete removes the task and returns it", () => {
     const a = store.create({ title: "Doomed" });
     const removed = store.delete(a.id);
