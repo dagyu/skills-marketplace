@@ -31,8 +31,8 @@ guidelines; every phase must respect it.
 │   ├── tasks/
 │   │   ├── data.json        # task metadata (source of truth)
 │   │   └── <slug>.md        # extended description per task
-│   ├── manifesto/MANIFESTO.md   # vision + non-negotiable guidelines
-│   └── internals/INTERNALS.md   # code-structure map for developers/agents
+│   ├── manifesto/MANIFESTO.md   # vision + guidelines (stub → `workflow manifesto info`)
+│   └── internals/INTERNALS.md   # code-structure map (stub → `workflow internals info`)
 ├── docs/                    # project documentation
 ├── CLAUDE.md                # agent guidance; points at the manifesto + internals
 └── README.md
@@ -41,6 +41,12 @@ guidelines; every phase must respect it.
 `extras/internals/INTERNALS.md` is an extension of `CLAUDE.md`: it maps how the
 code is structured and where to make each kind of change, so coding agents reach
 for the right module the first time. The **internals** skill keeps it honest.
+
+`init` writes `MANIFESTO.md` and `INTERNALS.md` as **stubs** — the workflow can't
+know your vision or code layout. Each stub points at an `info` command
+(`workflow manifesto info`, `workflow internals info`) that explains how to fill
+it in: the agent runs it, then writes the manifesto by interviewing you and the
+internals map from the codebase, rather than starting from boilerplate.
 
 ## Install
 
@@ -56,6 +62,8 @@ Or run without linking: `bun /path/to/workflow/src/index.ts <command>`.
 ```bash
 workflow --version                             # print version + build time
 workflow init                                  # scaffold extras/ and docs/
+workflow manifesto info                        # how to populate MANIFESTO.md (then write it)
+workflow internals info                        # how to populate INTERNALS.md (then write it)
 workflow brainstorm new "Add login"            # create a brainstorm note
 workflow brainstorm list
 workflow brainstorm delete "Add login"         # remove a note once it is planned

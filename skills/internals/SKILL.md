@@ -18,6 +18,14 @@ moment the structure changes.
 - An implementation task is about to **move, rename, split, or add** a module,
   command, or responsibility — i.e. it changes the structure the map describes.
 
+## Populate it first if it is a stub
+
+Fresh from `workflow init`, `INTERNALS.md` is a stub marked **"Not yet written."**
+If you find it in that state, write it before relying on it: run
+`workflow internals info` for the sections and what to inspect, then fill it in
+from the actual codebase (confirm the non-obvious parts with the developer). The
+manifesto has the same pattern — `workflow manifesto info`.
+
 ## Read before you navigate
 
 1. Open `extras/internals/INTERNALS.md`. Use its **Map of the codebase** and

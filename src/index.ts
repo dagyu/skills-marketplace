@@ -1,5 +1,6 @@
 #!/usr/bin/env bun
 import { runBrainstorm } from "./commands/brainstorm.ts";
+import { runInternals, runManifesto } from "./commands/docinfo.ts";
 import { runInit } from "./commands/init.ts";
 import { runTask } from "./commands/task.ts";
 import { CliError, out } from "./lib/cli.ts";
@@ -9,6 +10,8 @@ const USAGE = `workflow — a brainstorm → plan → implement workflow CLI
 
 Usage:
   workflow init                 Scaffold extras/ and docs/ into this project
+  workflow manifesto info       How to populate extras/manifesto/MANIFESTO.md
+  workflow internals info       How to populate extras/internals/INTERNALS.md
   workflow brainstorm <cmd>     Manage brainstorm notes (new, list)
   workflow task <cmd>           Manage tasks (create, list, get, update, delete)
 
@@ -28,6 +31,12 @@ async function main(argv: string[]): Promise<number> {
         return 0;
       case "init":
         await runInit();
+        return 0;
+      case "manifesto":
+        await runManifesto(rest);
+        return 0;
+      case "internals":
+        await runInternals(rest);
         return 0;
       case "brainstorm":
         runBrainstorm(rest);

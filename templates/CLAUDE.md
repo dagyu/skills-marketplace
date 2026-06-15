@@ -21,6 +21,11 @@ use when.
   you reach for the right module the first time, and keep it up to date when the
   structure changes.
 
+If either file is still a stub marked **"Not yet written"**, populate it before
+real work: run `workflow manifesto info` / `workflow internals info` for
+instructions, then write the manifesto by interviewing the developer and the
+internals map from the codebase — do not invent them.
+
 ## Data is managed by the CLI
 
 Never hand-edit `extras/tasks/data.json`. Manage brainstorm notes and tasks only

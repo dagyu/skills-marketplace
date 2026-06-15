@@ -66,5 +66,8 @@ export async function runInit(): Promise<void> {
   await copyTemplate(readmeTemplate, p.readmeFile);
   await copyTemplate(docsReadmeTemplate, join(p.docsDir, "README.md"));
 
-  out("\nDone. Start with the brainstorming skill, then planning, then implementation.");
+  out("\nDone. MANIFESTO.md and INTERNALS.md are stubs — populate them first:");
+  out("  - run `workflow manifesto info`, then write it by interviewing the developer");
+  out("  - run `workflow internals info`, then write it from the codebase");
+  out("Then start with the brainstorming skill, then planning, then implementation.");
 }

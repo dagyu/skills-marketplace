@@ -26,6 +26,11 @@ it with the developer instead of silently violating it.
 that says where each kind of change lives. Use the **internals** skill to consult
 it and to keep it honest when the structure changes.
 
+If either file is still a stub marked **"Not yet written"** (fresh from `init`),
+populate it first: run `workflow manifesto info` / `workflow internals info` for
+instructions, then write the manifesto by interviewing the developer and the
+internals map from the codebase. Never invent a project's vision or guidelines.
+
 ## The `workflow` CLI is the data layer
 
 All brainstorm notes and tasks are managed through the `workflow` CLI — **never
@@ -33,7 +38,9 @@ hand-edit `extras/tasks/data.json`**. Key commands:
 
 | Command | Use |
 |---|---|
-| `workflow init` | Scaffold `extras/` and `docs/` into a new project. |
+| `workflow init` | Scaffold `extras/` and `docs/` into a new project (MANIFESTO/INTERNALS as stubs). |
+| `workflow manifesto info` | Print how to populate `MANIFESTO.md`; run it, then write the file by interviewing the developer. |
+| `workflow internals info` | Print how to populate `INTERNALS.md`; run it, then write the file from the codebase. |
 | `workflow brainstorm new "<title>"` | Create a brainstorm note. |
 | `workflow brainstorm list` | List brainstorm notes. |
 | `workflow brainstorm delete "<name>"` | Delete a note once its content has been planned into tasks. |

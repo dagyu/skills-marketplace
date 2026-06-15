@@ -50,6 +50,38 @@ describe("workflow init", () => {
     const claude = readFileSync(join(project, "CLAUDE.md"), "utf8");
     expect(claude).toContain("extras/internals/INTERNALS.md");
   });
+
+  test("scaffolds MANIFESTO.md and INTERNALS.md as stubs pointing to the info commands", async () => {
+    await wf("init");
+    const manifesto = readFileSync(join(project, "extras/manifesto/MANIFESTO.md"), "utf8");
+    expect(manifesto).toContain("Not yet written");
+    expect(manifesto).toContain("workflow manifesto info");
+
+    const internals = readFileSync(join(project, "extras/internals/INTERNALS.md"), "utf8");
+    expect(internals).toContain("Not yet written");
+    expect(internals).toContain("workflow internals info");
+  });
+});
+
+describe("workflow manifesto / internals info", () => {
+  test("print instructions for populating the files by interviewing the developer", async () => {
+    const manifesto = await wf("manifesto", "info");
+    expect(manifesto.code).toBe(0);
+    expect(manifesto.stdout).toContain("How to populate extras/manifesto/MANIFESTO.md");
+    expect(manifesto.stdout).toContain("Interview the developer");
+
+    const internals = await wf("internals", "info");
+    expect(internals.code).toBe(0);
+    expect(internals.stdout).toContain("How to populate extras/internals/INTERNALS.md");
+    expect(internals.stdout).toContain("Map of the codebase");
+  });
+
+  test("an unknown subcommand exits non-zero with usage", async () => {
+    const res = await wf("manifesto", "bogus");
+    expect(res.code).toBe(1);
+    expect(res.stderr).toContain("Unknown manifesto command");
+    expect(res.stderr).toContain("workflow manifesto info");
+  });
 });
 
 describe("workflow brainstorm", () => {

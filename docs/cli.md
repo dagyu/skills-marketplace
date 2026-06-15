@@ -27,6 +27,19 @@ Scaffold the workflow structure into the current project: `extras/brainstorm/`,
 `README.md`, and a `CLAUDE.md` that points the agent at the manifesto and the
 internals map. Idempotent — existing files are never overwritten.
 
+`MANIFESTO.md` and `INTERNALS.md` are scaffolded as **stubs**, not filled-in
+documents: the workflow has no way to know the project's vision or code layout.
+Each stub points the agent at the matching `info` command, which it should run
+and then act on before any real work — populating the manifesto by interviewing
+the developer, and the internals map from the codebase.
+
+## `workflow manifesto` / `workflow internals`
+
+| Command | Description |
+|---|---|
+| `workflow manifesto info` | Print instructions for writing `extras/manifesto/MANIFESTO.md` — the sections to include and the questions to ask the developer. The agent runs this, then writes the file; it does not invent the vision or guidelines. |
+| `workflow internals info` | Print instructions for writing `extras/internals/INTERNALS.md` — the sections to include and what to inspect/confirm. The agent runs this, then writes the file from the actual codebase. |
+
 ## `workflow brainstorm`
 
 | Command | Description |
