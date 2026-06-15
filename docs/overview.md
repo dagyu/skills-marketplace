@@ -27,12 +27,12 @@ Five skills, packaged as a Claude Code plugin, guide the agent:
   CLI, and points at the manifesto.
 - **brainstorming** — rough idea → agreed design note.
 - **planning** — design note → concrete tasks (then strips the note).
-- **implementation** — task → TDD → developer confirmation → docs → commit.
+- **implementation** — task → build → developer confirmation → docs → commit.
 - **internals** — read `extras/internals/INTERNALS.md` to find the right code
   before editing, and keep that map honest when the structure changes.
 
-The skills enforce hard gates between phases (e.g. no production code without a
-failing test, no commit before docs are updated and the developer confirms).
+The skills enforce hard gates between phases (e.g. no planning before an approved
+brainstorm, no commit before docs are updated and the developer confirms).
 
 ## How the two layers meet
 

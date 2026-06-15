@@ -8,8 +8,8 @@ layers:
    layer. It manages brainstorm notes and tasks on disk so the agent never
    hand-edits `extras/tasks/data.json`.
 2. **A set of skills** (a Claude Code plugin) — the process layer. They guide the
-   agent through three phases and enforce the rules: TDD, manifesto guidelines, and
-   honest docs.
+   agent through three phases and enforce the rules: manifesto guidelines, honest
+   docs, and developer-gated phases.
 
 ## The three phases
 
@@ -17,7 +17,7 @@ layers:
 |---|---|---|
 | **Brainstorm** | Refine a rough idea into an agreed design. | A markdown note in `extras/brainstorm/`. |
 | **Plan** | Distill the note into concrete, ordered tasks, then remove the converted content from the note (deleting it if fully consumed). | Tasks in `extras/tasks/` (`data.json` + one markdown body per task); a trimmed or deleted note. |
-| **Implement** | TDD a developer-selected task: failing test → code → confirm → docs → commit → delete the task. | Tested code, updated docs, one commit; the finished task removed. |
+| **Implement** | Build a developer-selected task: code → confirm → docs → commit → delete the task. | Working code, updated docs, one commit; the finished task removed. |
 
 `extras/manifesto/MANIFESTO.md` holds the project's vision and non-negotiable
 guidelines; every phase must respect it.
@@ -91,7 +91,7 @@ When run from source (`bun run src/index.ts`), the build time reads
 ## Develop
 
 ```bash
-bun test           # run the test suite (TDD throughout)
+bun test           # run the test suite
 ```
 
 ## License

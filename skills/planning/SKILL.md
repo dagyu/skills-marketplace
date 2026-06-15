@@ -6,7 +6,8 @@ description: "Use when a brainstorm note is approved and needs breaking into con
 # Planning
 
 Convert an approved brainstorm note into concrete, bite-sized tasks. Each task is
-small enough to implement and commit on its own (roughly one TDD cycle). Tasks are
+small enough to implement and commit on its own (roughly one commit's worth of
+work). Tasks are
 created through the `workflow` CLI; once a brainstorm note's content has been
 turned into tasks, that content is **removed from the note** so it is never
 processed twice.
@@ -31,7 +32,7 @@ here", stop: capture it as a task instead.
 2. **Pick the source note.** Use `workflow brainstorm list`, then read the chosen
    `extras/brainstorm/<note>.md`.
 3. **Slice into tasks.** Each task should:
-   - have a single, clear concern (one TDD cycle, one commit);
+   - have a single, clear concern (one commit's worth of work);
    - be ordered so earlier tasks unblock later ones.
 4. **Create each task** with the CLI, **in dependency order** (a task can only
    depend on tasks that already exist, so create the prerequisites first):
@@ -86,9 +87,9 @@ here", stop: capture it as a task instead.
 - Files likely touched: ...
 - Approach: ...
 
-## TDD plan
-- Test to write first: <describe the failing test>
-- Expected behaviour once green: ...
+## Verification
+- How the change will be checked (tests, manual steps, etc.): ...
+- Expected behaviour once complete: ...
 ```
 
 ## No placeholders
@@ -100,4 +101,4 @@ re-deriving the design.
 ## Gate
 
 Do **not** start writing production code here. That is the implementation skill's
-job, and only after a failing test exists.
+job.

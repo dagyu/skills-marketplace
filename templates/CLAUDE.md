@@ -6,8 +6,8 @@ Guidance for coding agents working in this repository.
 
 This project is developed with the **workflow** tool: brainstorm → plan →
 implement. Move through the phases in order and respect the gates (no planning
-before an approved brainstorm; no production code without a failing test first;
-no commit before docs are updated and the developer confirms). The
+before an approved brainstorm; no commit before docs are updated and the developer
+confirms). The
 `workflow-overview` skill is injected each session and explains which skill to
 use when.
 

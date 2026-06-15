@@ -6,12 +6,12 @@ description: "Use at the start of any feature, change, or project managed with t
 # Workflow Overview
 
 This project uses a three-phase workflow that turns rough ideas into committed,
-tested, documented code. Each phase has its own skill. Move through them in order;
-do not skip ahead.
+documented code. Each phase has its own skill. Move through them in order; do not
+skip ahead.
 
 ```
 brainstorm  ──►  plan  ──►  implement  ──►  commit
- (capture)     (tasks)      (TDD)         (docs + commit)
+ (capture)     (tasks)      (build)       (docs + commit)
 ```
 
 ## Prime directive
@@ -62,7 +62,6 @@ clear keeps every later step more precise.
 ## Hard gates
 
 - Do not start planning until the developer has approved a brainstorm.
-- Do not write production code without a failing test first (see implementation).
 - Do not start a task while another is `in-progress` — only one task at a time
   (check `workflow task current`).
 - Do not commit until tests pass, the developer confirms, and docs/internals are

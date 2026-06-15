@@ -18,7 +18,7 @@ _List the top-level directories and what each owns. Keep it to one line each._
 |---|---|---|
 | `src/lib/` | Pure, unit-tested helpers | Adding reusable logic with no I/O |
 | `src/commands/` | One file per CLI command | Adding or changing a command |
-| `tests/` | The test suite (TDD) | Always — write the failing test first |
+| `tests/` | The test suite | When changing behaviour that needs coverage |
 -->
 
 ## Where things live
