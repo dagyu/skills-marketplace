@@ -58,6 +58,7 @@ the developer, and the internals map from the codebase.
 | `workflow task get <id> [--json]` | Show a task's metadata and its extended-description body. `--json` includes the body as a field. |
 | `workflow task update <id> [--title --description --priority --labels --depends-on --status]` | Patch fields and bump `updatedAt`. |
 | `workflow task delete <id>` | Remove the task from `data.json` and delete its markdown file. |
+| `workflow task clean` | Delete every `done` task and its markdown file in one pass; reports how many were removed. |
 
 `--depends-on` takes a comma-separated list of task ids the task is blocked by
 (e.g. `--depends-on 1,3`). Each id must be a positive integer that refers to an

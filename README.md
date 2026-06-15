@@ -75,6 +75,7 @@ workflow task get <id> [--json]
 workflow task update <id> --status done
 workflow task update <id> --depends-on 1,2                # set/clear dependencies
 workflow task delete <id>
+workflow task clean                            # delete every task already marked done
 ```
 
 See [`docs/`](docs/) for full documentation.

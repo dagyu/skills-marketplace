@@ -227,6 +227,32 @@ describe("workflow task", () => {
     expect(res.stderr).toContain("itself");
   });
 
+  test("clean removes only done tasks and their markdown files", async () => {
+    await wf("init");
+    await wf("task", "create", "--title", "Keep todo");
+    await wf("task", "create", "--title", "Finish me");
+    await wf("task", "create", "--title", "Also done");
+
+    await wf("task", "update", "2", "--status", "done");
+    await wf("task", "update", "3", "--status", "done");
+
+    const cleaned = await wf("task", "clean");
+    expect(cleaned.code).toBe(0);
+    expect(cleaned.stdout).toContain("Cleaned 2 done tasks");
+
+    // Done tasks and their markdown are gone; the todo task survives.
+    const remaining = JSON.parse((await wf("task", "list", "--json")).stdout);
+    expect(remaining).toHaveLength(1);
+    expect(remaining[0].title).toBe("Keep todo");
+    expect(existsSync(join(project, "extras/tasks/finish-me.md"))).toBe(false);
+    expect(existsSync(join(project, "extras/tasks/also-done.md"))).toBe(false);
+    expect(existsSync(join(project, "extras/tasks/keep-todo.md"))).toBe(true);
+
+    // Running again with nothing to clean reports so.
+    const nothing = await wf("task", "clean");
+    expect(nothing.stdout).toContain("No done tasks to clean.");
+  });
+
   test("only one task can be in progress (lock) and `current` reports it", async () => {
     await wf("init");
     await wf("task", "create", "--title", "First");

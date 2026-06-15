@@ -12,7 +12,8 @@ const USAGE = `Usage:
   workflow task current
   workflow task get <id> [--json]
   workflow task update <id> [--title <t>] [--description <d>] [--priority <p>] [--labels a,b] [--depends-on 1,2] [--status <s>]
-  workflow task delete <id>`;
+  workflow task delete <id>
+  workflow task clean`;
 
 function store(): TaskStore {
   return new TaskStore(resolveProjectPaths().dataFile);
@@ -57,6 +58,8 @@ export function runTask(args: string[]): void {
       return taskUpdate(rest);
     case "delete":
       return taskDelete(rest);
+    case "clean":
+      return taskClean();
     default:
       throw new CliError(`Unknown task command "${sub ?? ""}".\n${USAGE}`);
   }
@@ -229,4 +232,20 @@ function taskDelete(rest: string[]): void {
   const bodyPath = join(p.root, removed.path);
   rmSync(bodyPath, { force: true });
   out(`Deleted #${removed.id}.`);
+}
+
+/** Delete every `done` task along with its markdown file. */
+function taskClean(): void {
+  const st = store();
+  const p = resolveProjectPaths();
+  const done = st.list({ status: "done" });
+  if (done.length === 0) {
+    out("No done tasks to clean.");
+    return;
+  }
+  for (const task of done) {
+    st.delete(task.id);
+    rmSync(join(p.root, task.path), { force: true });
+  }
+  out(`Cleaned ${done.length} done task${done.length === 1 ? "" : "s"}.`);
 }

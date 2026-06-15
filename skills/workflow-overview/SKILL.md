@@ -50,6 +50,7 @@ hand-edit `extras/tasks/data.json`**. Key commands:
 | `workflow task get <id> [--json]` | Show a task and its extended description. |
 | `workflow task update <id> [--status --depends-on --title ...]` | Update a task. Setting `--status in-progress` fails if another task already holds it. |
 | `workflow task delete <id>` | Delete a task and its markdown file (do this once it is implemented and committed). |
+| `workflow task clean` | Delete every `done` task and its markdown file at once — sweep the queue clear. |
 
 Run `workflow` with no arguments for full usage.
 
