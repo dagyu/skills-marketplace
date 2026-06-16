@@ -13,26 +13,24 @@ binary works in any project.
 The CLI owns:
 
 - **Brainstorm notes** — markdown files in `extras/brainstorm/`.
-- **Tasks** — metadata in `extras/tasks/data.json` plus one extended-description
-  markdown file per task (`extras/tasks/<slug>.md`).
-
-`src/lib/store.ts` (`TaskStore`) is the *only* module that reads or writes
-`data.json`, which keeps the data layer small and unit-testable.
+- **Scaffolding** — the manifesto and internals stubs, `docs/`, `CLAUDE.md`, and a
+  starter `README.md`, all written by `workflow init`.
 
 ## Layer 2 — the skills (process)
 
-Five skills, packaged as a Claude Code plugin, guide the agent:
+Three skills, packaged as a Claude Code plugin, guide the agent:
 
-- **workflow-overview** — injected at session start; explains the phases and the
-  CLI, and points at the manifesto.
-- **brainstorming** — rough idea → agreed design note.
-- **planning** — design note → concrete tasks (then strips the note).
-- **implementation** — task → build → developer confirmation → docs → commit.
+- **workflow-overview** — injected at session start; explains the flow (optional
+  brainstorm, then implement directly), lists the CLI, and points at the manifesto.
+- **brainstorming** — rough idea → agreed design note (optional; skip when the
+  change is already clear).
 - **internals** — read `extras/internals/INTERNALS.md` to find the right code
   before editing, and keep that map honest when the structure changes.
 
-The skills enforce hard gates between phases (e.g. no planning before an approved
-brainstorm, no commit before docs are updated and the developer confirms).
+There is no task tracker and no separate planning phase: once the direction is
+clear, the coding agent implements directly. The skills still enforce the rules —
+respect the manifesto, keep docs honest, and do not commit before the change works
+and the developer confirms.
 
 ## How the two layers meet
 

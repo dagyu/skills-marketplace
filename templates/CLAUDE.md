@@ -4,18 +4,18 @@ Guidance for coding agents working in this repository.
 
 ## Workflow
 
-This project is developed with the **workflow** tool: brainstorm → plan →
-implement. Move through the phases in order and respect the gates (no planning
-before an approved brainstorm; no commit before docs are updated and the developer
-confirms). The
+This project is developed with the **workflow** tool: an optional brainstorm to
+agree on a design, then the coding agent implements directly (no task tracker, no
+separate planning phase). Brainstorm when the idea is rough; otherwise build it.
+Do not commit before docs are updated and the developer confirms. The
 `workflow-overview` skill is injected each session and explains which skill to
 use when.
 
 ## Read before you work
 
 - **`extras/manifesto/MANIFESTO.md`** — the project's vision and non-negotiable
-  guidelines. Every brainstorm, plan, and implementation must respect it. If a
-  request conflicts with it, raise that instead of silently violating it.
+  guidelines. Every change must respect it. If a request conflicts with it, raise
+  that instead of silently violating it.
 - **`extras/internals/INTERNALS.md`** — a map of how the code is structured and
   where to make changes. **Read it before navigating or editing the codebase** so
   you reach for the right module the first time, and keep it up to date when the
@@ -26,12 +26,12 @@ real work: run `workflow manifesto info` / `workflow internals info` for
 instructions, then write the manifesto by interviewing the developer and the
 internals map from the codebase — do not invent them.
 
-## Data is managed by the CLI
+## Brainstorm notes are managed by the CLI
 
-Never hand-edit `extras/tasks/data.json`. Manage brainstorm notes and tasks only
-through the `workflow` CLI (run `workflow` with no arguments for usage).
+Manage brainstorm notes through the `workflow` CLI (run `workflow` with no
+arguments for usage), rather than hand-creating files in `extras/brainstorm/`.
 
 ## Keep docs honest
 
-When an implementation task changes behaviour, update `docs/`, `README.md`, and —
-if the structure changed — `extras/internals/INTERNALS.md`, in the same commit.
+When a change alters behaviour, update `docs/`, `README.md`, and — if the
+structure changed — `extras/internals/INTERNALS.md`, in the same commit.

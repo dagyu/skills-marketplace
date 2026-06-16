@@ -1,8 +1,8 @@
 # How to populate extras/manifesto/MANIFESTO.md
 
 The manifesto is the project's source of truth: its vision and the
-non-negotiable guidelines every brainstorm, plan, and implementation must
-respect. Get it right before any real work begins.
+non-negotiable guidelines every change must respect. Get it right before any real
+work begins.
 
 **Do not write it from assumptions.** Interview the developer first, then write
 down what they tell you. Ask:
@@ -10,7 +10,7 @@ down what they tell you. Ask:
 - **Vision** — What is this project, and why does it exist? Who is it for?
 - **Guidelines** — What rules must every change respect? (style, scope,
   testing, performance, security — whatever they care about)
-- **Definition of done** — What has to be true before a task counts as finished?
+- **Definition of done** — What has to be true before a change counts as finished?
 
 Then write `extras/manifesto/MANIFESTO.md` with these sections:
 
@@ -24,7 +24,7 @@ A numbered list of non-negotiable rules for all work in the repo. Sensible
 defaults to **confirm** (not assume) with the developer:
 
 1. **YAGNI.** Build what is needed now, not what might be needed later.
-2. **Small, reviewable changes.** One concern per task, one task per commit.
+2. **Small, reviewable changes.** One concern per change, one change per commit.
 3. **Keep docs honest.** Update `docs/` and `README.md` in the same change that
    alters behaviour.
 
@@ -33,7 +33,7 @@ documents as needed.
 
 ## Definition of done
 
-A checklist that must hold before a task is done, e.g.:
+A checklist that must hold before a change is done, e.g.:
 
 - [ ] The change is verified to work (however this project verifies).
 - [ ] The developer has confirmed the implementation.

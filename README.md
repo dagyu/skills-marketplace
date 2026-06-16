@@ -1,26 +1,25 @@
 # workflow
 
-A structured **brainstorm → plan → implement** workflow for coding agents,
+A lightweight **brainstorm (optional) → implement** workflow for coding agents,
 inspired by [superpowers](https://github.com/obra/superpowers). It combines two
 layers:
 
 1. **A `workflow` CLI** (TypeScript, run with [Bun](https://bun.sh)) — the data
-   layer. It manages brainstorm notes and tasks on disk so the agent never
-   hand-edits `extras/tasks/data.json`.
+   layer. It manages brainstorm notes on disk, plus the manifesto/internals
+   scaffolding.
 2. **A set of skills** (a Claude Code plugin) — the process layer. They guide the
-   agent through three phases and enforce the rules: manifesto guidelines, honest
-   docs, and developer-gated phases.
+   agent to brainstorm when useful, implement directly, and enforce the rules:
+   manifesto guidelines, honest docs, developer-confirmed commits.
 
-## The three phases
+## The flow
 
-| Phase | What happens | Output |
+| Step | What happens | Output |
 |---|---|---|
-| **Brainstorm** | Refine a rough idea into an agreed design. | A markdown note in `extras/brainstorm/`. |
-| **Plan** | Distill the note into concrete, ordered tasks, then remove the converted content from the note (deleting it if fully consumed). | Tasks in `extras/tasks/` (`data.json` + one markdown body per task); a trimmed or deleted note. |
-| **Implement** | Build a developer-selected task: code → confirm → docs → commit → delete the task. | Working code, updated docs, one commit; the finished task removed. |
+| **Brainstorm** (optional) | Refine a rough idea into an agreed design. Skip it when the change is already clear. | A markdown note in `extras/brainstorm/`. |
+| **Implement** | The coding agent builds the change directly — from the brainstorm note or straight from the request: code → confirm → docs → commit. | Working code, updated docs, one commit; the note deleted once implemented. |
 
 `extras/manifesto/MANIFESTO.md` holds the project's vision and non-negotiable
-guidelines; every phase must respect it.
+guidelines; every change must respect it.
 
 ## Project layout produced by `workflow init`
 
@@ -28,9 +27,6 @@ guidelines; every phase must respect it.
 <project>/
 ├── extras/
 │   ├── brainstorm/          # one markdown note per idea
-│   ├── tasks/
-│   │   ├── data.json        # task metadata (source of truth)
-│   │   └── <slug>.md        # extended description per task
 │   ├── manifesto/MANIFESTO.md   # vision + guidelines (stub → `workflow manifesto info`)
 │   └── internals/INTERNALS.md   # code-structure map (stub → `workflow internals info`)
 ├── docs/                    # project documentation
@@ -66,16 +62,7 @@ workflow manifesto info                        # how to populate MANIFESTO.md (t
 workflow internals info                        # how to populate INTERNALS.md (then write it)
 workflow brainstorm new "Add login"            # create a brainstorm note
 workflow brainstorm list
-workflow brainstorm delete "Add login"         # remove a note once it is planned
-workflow task create --title "Login form" --priority high --labels ui,auth
-workflow task create --title "Login API" --depends-on 1   # blocked until #1 is done
-workflow task list [--status --priority --label --json]
-workflow task current                          # the in-progress task (the lock)
-workflow task get <id> [--json]
-workflow task update <id> --status done
-workflow task update <id> --depends-on 1,2                # set/clear dependencies
-workflow task delete <id>
-workflow task clean                            # delete every task already marked done
+workflow brainstorm delete "Add login"         # remove a note once it is implemented
 ```
 
 See [`docs/`](docs/) for full documentation.

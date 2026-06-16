@@ -1,25 +1,33 @@
 ---
 name: workflow-overview
-description: "Use at the start of any feature, change, or project managed with the workflow CLI, and whenever deciding what to do next. Explains the brainstorm → plan → implement phases and which skill to invoke. Read before touching extras/tasks/data.json or starting code."
+description: "Use at the start of any feature, change, or project managed with the workflow CLI, and whenever deciding what to do next. Explains the optional brainstorm step and how the coding agent implements directly. Read before starting any code."
 ---
 
 # Workflow Overview
 
-This project uses a three-phase workflow that turns rough ideas into committed,
-documented code. Each phase has its own skill. Move through them in order; do not
-skip ahead.
+This project uses a lightweight workflow: an **optional brainstorm** to agree on a
+design, then the coding agent **implements directly**. There is no task tracker
+and no separate planning phase — once the direction is clear, build it.
 
 ```
-brainstorm  ──►  plan  ──►  implement  ──►  commit
- (capture)     (tasks)      (build)       (docs + commit)
+brainstorm (optional)  ──►  implement  ──►  commit
+   (capture design)         (build it)     (docs + commit)
 ```
+
+- **Idea is rough or its scope/approach is unclear?** Brainstorm first to agree on
+  a design (use the **brainstorming** skill), then implement.
+- **Idea is already clear, or the developer says to just do it?** Skip the
+  brainstorm and implement directly.
+
+Brainstorming is a tool, not a gate: reach for it when a moment of explicit design
+will help, and skip it when the change is small and well understood.
 
 ## Prime directive
 
 **Read `extras/manifesto/MANIFESTO.md` before doing any work.** It holds the
-project's vision and non-negotiable guidelines. Every brainstorm, plan, and
-implementation must respect it. If a request conflicts with the manifesto, raise
-it with the developer instead of silently violating it.
+project's vision and non-negotiable guidelines. Every change must respect it. If a
+request conflicts with the manifesto, raise it with the developer instead of
+silently violating it.
 
 **Before navigating or editing the codebase, read
 `extras/internals/INTERNALS.md`** — the code map (an extension of `CLAUDE.md`)
@@ -31,10 +39,9 @@ populate it first: run `workflow manifesto info` / `workflow internals info` for
 instructions, then write the manifesto by interviewing the developer and the
 internals map from the codebase. Never invent a project's vision or guidelines.
 
-## The `workflow` CLI is the data layer
+## The `workflow` CLI
 
-All brainstorm notes and tasks are managed through the `workflow` CLI — **never
-hand-edit `extras/tasks/data.json`**. Key commands:
+Brainstorm notes are managed through the `workflow` CLI. Key commands:
 
 | Command | Use |
 |---|---|
@@ -43,34 +50,36 @@ hand-edit `extras/tasks/data.json`**. Key commands:
 | `workflow internals info` | Print how to populate `INTERNALS.md`; run it, then write the file from the codebase. |
 | `workflow brainstorm new "<title>"` | Create a brainstorm note. |
 | `workflow brainstorm list` | List brainstorm notes. |
-| `workflow brainstorm delete "<name>"` | Delete a note once its content has been planned into tasks. |
-| `workflow task create --title ... [--description --priority --labels --depends-on --body-file]` | Create a task (prints its id). `--depends-on 1,2` marks it blocked by those tasks; omit it when the task is ready to build. |
-| `workflow task list [--status --priority --label --json]` | List/filter tasks (shows dependencies). |
-| `workflow task current` | Show the task in progress (the lock), or report that none is. Check before starting a new one. |
-| `workflow task get <id> [--json]` | Show a task and its extended description. |
-| `workflow task update <id> [--status --depends-on --title ...]` | Update a task. Setting `--status in-progress` fails if another task already holds it. |
-| `workflow task delete <id>` | Delete a task and its markdown file (do this once it is implemented and committed). |
-| `workflow task clean` | Delete every `done` task and its markdown file at once — sweep the queue clear. |
+| `workflow brainstorm delete "<name>"` | Delete a note once its design has been implemented. |
 
 Run `workflow` with no arguments for full usage.
 
-The brainstorm and task stores are **queues, not archives**: planning removes
-converted content from brainstorm notes (deleting a note once it is fully
-consumed), and implementation deletes each task once it is committed. Keeping them
-clear keeps every later step more precise.
+The brainstorm folder is a **queue, not an archive**: once a note's design has
+been implemented and committed, delete it. Keeping it clear keeps the next
+brainstorm precise.
 
 ## Which skill, when
 
-- **Idea is rough / not fully specified?** → use the **brainstorming** skill.
-- **Idea is agreed but not broken into work?** → use the **planning** skill.
-- **Tasks exist and you are ready to build?** → use the **implementation** skill.
+- **Idea is rough / not fully specified?** → use the **brainstorming** skill
+  (optional — skip it when the change is clear).
 - **Need to find or change the right code (or the structure shifted)?** → use the
   **internals** skill.
 
+## How to implement
+
+Whether you brainstormed first or went straight in, when you build a change:
+
+1. **Respect the manifesto** (`extras/manifesto/MANIFESTO.md`) and the internals
+   map (`extras/internals/INTERNALS.md`).
+2. **Build it** — how you build (test-first, tests-after, or otherwise) is up to
+   you and the developer. Keep it minimal (YAGNI) and verify it actually works.
+3. **Confirm with the developer**, then **update docs/`README.md` and
+   `INTERNALS.md`** in the same change when behaviour or structure changed.
+4. **Commit** with the conventional-commit skill (`cmd-llm-conventional-commit`),
+   on the developer's go-ahead. If the change came from a brainstorm note that is
+   now fully implemented, delete the note (`workflow brainstorm delete`).
+
 ## Hard gates
 
-- Do not start planning until the developer has approved a brainstorm.
-- Do not start a task while another is `in-progress` — only one task at a time
-  (check `workflow task current`).
-- Do not commit until tests pass, the developer confirms, and docs/internals are
-  updated. After committing, delete the finished task.
+- Do not commit until the change works, the developer confirms, and docs/internals
+  are updated.

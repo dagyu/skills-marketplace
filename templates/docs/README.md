@@ -1,8 +1,8 @@
 # Documentation
 
 This directory holds the detailed documentation for the project. Keep it in sync
-with the code: whenever an implementation task changes behaviour, update the
-relevant document here in the same commit.
+with the code: whenever a change alters behaviour, update the relevant document
+here in the same commit.
 
 Suggested structure:
 

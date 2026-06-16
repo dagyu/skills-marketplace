@@ -8,8 +8,8 @@ Early development.
 
 ## Workflow
 
-This project is developed with the **workflow** tool (brainstorm → plan →
-implement). See [`extras/manifesto/MANIFESTO.md`](extras/manifesto/MANIFESTO.md)
+This project is developed with the **workflow** tool (optional brainstorm, then
+implement directly). See [`extras/manifesto/MANIFESTO.md`](extras/manifesto/MANIFESTO.md)
 for the guiding principles and [`docs/`](docs/) for detailed documentation.
 
 ## Getting started

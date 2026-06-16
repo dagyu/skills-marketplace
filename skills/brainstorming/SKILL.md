@@ -1,25 +1,23 @@
 ---
 name: brainstorming
-description: "Use when the developer has a rough idea, feature request, or problem that is not yet fully specified, before any planning or coding. Refines vague ideas into a clear, agreed design captured in extras/brainstorm/. Triggers: \"I want to add…\", \"what if we…\", \"I'm thinking about…\", unclear scope."
+description: "Use when the developer has a rough idea, feature request, or problem that is not yet fully specified, before coding. Refines vague ideas into a clear, agreed design captured in extras/brainstorm/. Optional — skip it when the change is already clear. Triggers: \"I want to add…\", \"what if we…\", \"I'm thinking about…\", unclear scope."
 ---
 
 # Brainstorming
 
-Turn a rough idea into a clear, agreed design **before** any task is planned or
-any code is written. The output is one markdown note per idea in
-`extras/brainstorm/`, written only after the developer agrees on the direction.
+Turn a rough idea into a clear, agreed design **before** any code is written. The
+output is one markdown note per idea in `extras/brainstorm/`, written only after
+the developer agrees on the direction. The coding agent then implements that
+design directly (see workflow-overview).
 
 ## When to use
 
 - The developer describes something they want but the scope, approach, or goal
   is not yet pinned down.
-- You are tempted to start planning or coding but cannot state the final goal in
-  one sentence.
+- You are tempted to start coding but cannot state the final goal in one sentence.
 
-## Anti-pattern: "this is too simple to brainstorm"
-
-Almost every change benefits from a moment of explicit design. If you think it is
-too simple, the brainstorm will be short — that is fine. Do not skip it.
+Brainstorming is **optional**. When the idea is already clear and well understood,
+or the developer says to just do it, skip this skill and implement directly.
 
 ## Checklist
 
@@ -40,7 +38,7 @@ too simple, the brainstorm will be short — that is fine. Do not skip it.
 
 ## Output shape
 
-A brainstorm note should let a future reader (or the planning skill) understand
+A brainstorm note should let a future reader (or whoever implements it) understand
 the idea without you present:
 
 ```markdown
@@ -62,7 +60,10 @@ the idea without you present:
 - ... (only if any remain)
 ```
 
-## Gate
+## After the brainstorm
 
-Do **not** invoke the planning skill until the developer has approved the
-brainstorm note.
+Once the developer has approved the note, implement the design directly (see
+**How to implement** in workflow-overview): respect the manifesto and internals
+map, build and verify the change, confirm with the developer, update docs, and
+commit. When the note's design is fully implemented and committed, delete it with
+`workflow brainstorm delete`.

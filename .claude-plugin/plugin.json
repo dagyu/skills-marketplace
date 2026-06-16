@@ -1,6 +1,6 @@
 {
   "name": "workflow",
-  "description": "A brainstorm → plan → implement workflow for coding agents: a Bun CLI for tasks plus skills that enforce TDD, manifesto guidelines, and honest docs.",
+  "description": "A lightweight brainstorm (optional) → implement workflow for coding agents: a Bun CLI for brainstorm notes plus skills that enforce manifesto guidelines and honest docs.",
   "version": "0.1.0",
   "author": {
     "name": "dagyu"
@@ -9,8 +9,6 @@
   "keywords": [
     "workflow",
     "skills",
-    "tdd",
-    "planning",
     "brainstorming"
   ]
 }

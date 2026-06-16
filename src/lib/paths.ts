@@ -10,8 +10,6 @@ export interface ProjectPaths {
   root: string;
   extrasDir: string;
   brainstormDir: string;
-  tasksDir: string;
-  dataFile: string;
   manifestoDir: string;
   manifestoFile: string;
   internalsDir: string;
@@ -23,15 +21,12 @@ export interface ProjectPaths {
 
 export function resolveProjectPaths(root: string = process.cwd()): ProjectPaths {
   const extrasDir = join(root, "extras");
-  const tasksDir = join(extrasDir, "tasks");
   const manifestoDir = join(extrasDir, "manifesto");
   const internalsDir = join(extrasDir, "internals");
   return {
     root,
     extrasDir,
     brainstormDir: join(extrasDir, "brainstorm"),
-    tasksDir,
-    dataFile: join(tasksDir, "data.json"),
     manifestoDir,
     manifestoFile: join(manifestoDir, "MANIFESTO.md"),
     internalsDir,

@@ -39,5 +39,5 @@ The exact commands, assuming the reader has just cloned the repo.
 Non-obvious things that have bitten people. Add to this list whenever something
 surprises you.
 
-Keep this file honest: when an implementation task changes the structure, update
-it in the **same commit**.
+Keep this file honest: when a change alters the structure, update it in the
+**same commit**.

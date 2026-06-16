@@ -2,18 +2,16 @@
 import { runBrainstorm } from "./commands/brainstorm.ts";
 import { runInternals, runManifesto } from "./commands/docinfo.ts";
 import { runInit } from "./commands/init.ts";
-import { runTask } from "./commands/task.ts";
 import { CliError, out } from "./lib/cli.ts";
 import { versionString } from "./version.ts";
 
-const USAGE = `workflow — a brainstorm → plan → implement workflow CLI
+const USAGE = `workflow — an optional-brainstorm → implement workflow CLI
 
 Usage:
   workflow init                 Scaffold extras/ and docs/ into this project
   workflow manifesto info       How to populate extras/manifesto/MANIFESTO.md
   workflow internals info       How to populate extras/internals/INTERNALS.md
-  workflow brainstorm <cmd>     Manage brainstorm notes (new, list)
-  workflow task <cmd>           Manage tasks (create, list, get, update, delete)
+  workflow brainstorm <cmd>     Manage brainstorm notes (new, list, delete)
 
 Options:
   -v, --version                 Print the version and build time
@@ -40,9 +38,6 @@ async function main(argv: string[]): Promise<number> {
         return 0;
       case "brainstorm":
         runBrainstorm(rest);
-        return 0;
-      case "task":
-        runTask(rest);
         return 0;
       case undefined:
       case "-h":

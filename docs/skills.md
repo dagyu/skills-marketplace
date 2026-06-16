@@ -7,44 +7,18 @@ registered in `hooks/hooks.json`) injects the overview skill into every session.
 
 ## workflow-overview (bootstrap)
 
-Injected at session start. Explains the three phases, lists the `workflow` CLI
-commands, sets the prime directive (read `MANIFESTO.md` first; never hand-edit
-`data.json`), and tells the agent which skill to invoke for each phase.
+Injected at session start. Explains the flow (optional brainstorm, then implement
+directly), lists the `workflow` CLI commands, sets the prime directive (read
+`MANIFESTO.md` first), and tells the agent which skill to invoke when.
 
 ## brainstorming
 
 Refines a rough idea into an agreed design. Reads the manifesto, explores context,
 asks clarifying questions, proposes approaches, and — only after the developer
-agrees — captures a note with `workflow brainstorm new`. Gate: no planning until
-the note is approved.
-
-## planning
-
-Distills an approved brainstorm note into concrete, bite-sized tasks created with
-`workflow task create` (preferring `--body-file` for the extended description). It
-**only creates and orders tasks — it never writes code**. Tasks are created in
-dependency order, using `--depends-on` to mark a task blocked by earlier ones and
-omitting it when a task is ready to build. After creating the tasks it **removes
-the converted content from the source note** — deleting the note outright with
-`workflow brainstorm delete` when it is fully consumed, or editing it to leave
-only the not-yet-planned parts — so nothing is processed twice. Gate: no
-production code here.
-
-## implementation
-
-Builds one task at a time, **starting only when the developer selects a task** —
-and only when no other task is `in-progress`, since that status is a one-at-a-time
-**lock** the CLI enforces (`workflow task current` reports the holder). The cycle:
-check the lock → confirm each `dependsOn` prerequisite is `done` or already deleted
-→ **explicitly ask the developer to proceed** → acquire (`--status in-progress`) →
-build the change (the developer chooses the approach — TDD or otherwise — and
-verifies it works) → **developer confirmation** → update the right metadata
-(**`docs/`/`README.md`** for external usage, **`extras/internals/INTERNALS.md`**
-for code structure, both when relevant, the manifesto if a guideline changed;
-asking the developer if it is unclear) → **ask to commit** →
-`cmd-llm-conventional-commit` → **delete the finished task** (`workflow task
-delete`, which releases the lock). Completed tasks are not kept; git history is the
-record.
+agrees — captures a note with `workflow brainstorm new`. **Optional**: when the
+change is already clear, the agent skips it and implements directly. After the note
+is approved, the agent implements the design directly and deletes the note once it
+is committed.
 
 ## internals
 

@@ -15,8 +15,8 @@ moment the structure changes.
 
 - You are about to navigate or edit a part of the codebase you do not already
   know cold. Read the map first instead of grepping blind.
-- An implementation task is about to **move, rename, split, or add** a module,
-  command, or responsibility — i.e. it changes the structure the map describes.
+- A change is about to **move, rename, split, or add** a module, command, or
+  responsibility — i.e. it changes the structure the map describes.
 
 ## Populate it first if it is a stub
 
@@ -47,14 +47,14 @@ The map is only useful if it matches reality. Update
 - discover a gotcha (load order, generated file, env var, platform quirk) worth
   warning the next person about.
 
-This is the same honesty rule the implementation skill applies to `docs/` and
-`README.md` — extend it to the internals map.
+This is the same honesty rule that applies to `docs/` and `README.md` — extend it
+to the internals map.
 
 ## Relationship to the other skills
 
-- This is **not** a phase of its own. It supports the others: consult the map
-  during **implementation** to find the right code, and update it as part of that
-  task's documentation step.
+- This is **not** a phase of its own. It supports your work: consult the map when
+  implementing to find the right code, and update it as part of the same change's
+  documentation step.
 - It does **not** replace `extras/manifesto/MANIFESTO.md`. The manifesto says
   *what the project must be*; the internals map says *where the code is*.
 

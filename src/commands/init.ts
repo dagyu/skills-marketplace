@@ -54,11 +54,8 @@ export async function runInit(): Promise<void> {
   out("Scaffolding workflow structure:");
 
   ensureDir(p.brainstormDir);
-  ensureDir(p.tasksDir);
   ensureDir(p.internalsDir);
   ensureDir(p.docsDir);
-
-  writeIfAbsent(p.dataFile, JSON.stringify({ nextId: 1, tasks: [] }, null, 2) + "\n");
 
   await copyTemplate(manifestoTemplate, p.manifestoFile);
   await copyTemplate(internalsTemplate, p.internalsFile);
@@ -69,5 +66,5 @@ export async function runInit(): Promise<void> {
   out("\nDone. MANIFESTO.md and INTERNALS.md are stubs — populate them first:");
   out("  - run `workflow manifesto info`, then write it by interviewing the developer");
   out("  - run `workflow internals info`, then write it from the codebase");
-  out("Then start with the brainstorming skill, then planning, then implementation.");
+  out("Then brainstorm with the brainstorming skill (optional) and implement directly.");
 }

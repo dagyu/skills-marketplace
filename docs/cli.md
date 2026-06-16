@@ -22,10 +22,10 @@ self-contained.
 ## `workflow init`
 
 Scaffold the workflow structure into the current project: `extras/brainstorm/`,
-`extras/tasks/` (with an empty `data.json`), `extras/manifesto/MANIFESTO.md`,
-`extras/internals/INTERNALS.md` (the code-structure map), `docs/`, a starter
-`README.md`, and a `CLAUDE.md` that points the agent at the manifesto and the
-internals map. Idempotent — existing files are never overwritten.
+`extras/manifesto/MANIFESTO.md`, `extras/internals/INTERNALS.md` (the
+code-structure map), `docs/`, a starter `README.md`, and a `CLAUDE.md` that points
+the agent at the manifesto and the internals map. Idempotent — existing files are
+never overwritten.
 
 `MANIFESTO.md` and `INTERNALS.md` are scaffolded as **stubs**, not filled-in
 documents: the workflow has no way to know the project's vision or code layout.
@@ -46,49 +46,4 @@ the developer, and the internals map from the codebase.
 |---|---|
 | `workflow brainstorm new "<title>"` | Create `extras/brainstorm/<slug>.md` seeded with the title heading. Prints the path. |
 | `workflow brainstorm list` | List notes with their titles. |
-| `workflow brainstorm delete "<name>"` | Delete `extras/brainstorm/<slug>.md` (accepts the note's title or slug). Errors non-zero if no such note exists. Used by planning to clear a note once its content has become tasks. |
-
-## `workflow task`
-
-| Command | Description |
-|---|---|
-| `workflow task create --title "<t>" [--description <d>] [--priority low\|medium\|high] [--labels a,b] [--depends-on 1,2] [--body-file <path>]` | Create a task. Assigns the next integer id, writes `extras/tasks/<slug>.md` (from `--body-file` if given, else a stub), and prints the id. |
-| `workflow task list [--status <s>] [--priority <p>] [--label <l>] [--json]` | List/filter tasks. The text view shows each task's dependencies; `--json` prints the raw array. |
-| `workflow task current` | Show the task currently `in-progress` (the lock), or report that none is. |
-| `workflow task get <id> [--json]` | Show a task's metadata and its extended-description body. `--json` includes the body as a field. |
-| `workflow task update <id> [--title --description --priority --labels --depends-on --status]` | Patch fields and bump `updatedAt`. |
-| `workflow task delete <id>` | Remove the task from `data.json` and delete its markdown file. |
-| `workflow task clean` | Delete every `done` task and its markdown file in one pass; reports how many were removed. |
-
-`--depends-on` takes a comma-separated list of task ids the task is blocked by
-(e.g. `--depends-on 1,3`). Each id must be a positive integer that refers to an
-existing task and not the task itself, or the command exits non-zero. Omit the
-flag to leave a task independently implementable; on `update`, pass an empty
-value (`--depends-on ""`) to clear an existing dependency list.
-
-### Task fields (`data.json`)
-
-`data.json` has the shape `{ "nextId": number, "tasks": Task[] }`. Each task:
-
-| Field | Type | Notes |
-|---|---|---|
-| `id` | number | Auto-increment; never reused. |
-| `title` | string | |
-| `description` | string | One-line summary. |
-| `priority` | `low` \| `medium` \| `high` | Defaults to `medium`. |
-| `labels` | string[] | |
-| `path` | string | Project-relative path to the markdown body. |
-| `status` | `todo` \| `in-progress` \| `done` | Defaults to `todo`. |
-| `dependsOn` | number[] | Ids of tasks that must be `done` first. **Absent when the task is ready to build now**; populated only when blocked. |
-| `createdAt` / `updatedAt` | ISO string | |
-
-Invalid enum values and missing required flags exit non-zero with an error on
-stderr.
-
-### The in-progress lock
-
-`in-progress` acts as a lock: at most one task may hold it, enforcing one task at
-a time. `workflow task update <id> --status in-progress` exits non-zero if a
-*different* task is already in progress (re-setting the same task is allowed). Use
-`workflow task current` to see the holder before starting a new task; the lock is
-released when the in-progress task is moved off `in-progress` or deleted.
+| `workflow brainstorm delete "<name>"` | Delete `extras/brainstorm/<slug>.md` (accepts the note's title or slug). Errors non-zero if no such note exists. Use it to clear a note once its design has been implemented. |
