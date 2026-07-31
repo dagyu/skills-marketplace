@@ -1,6 +1,6 @@
 ---
 name: workflow-overview
-description: "Use at the start of any feature, change, or project managed with the workflow CLI, and whenever deciding what to do next. Explains the optional brainstorm step and how the coding agent implements directly. Read before starting any code."
+description: "Use at the start of any feature, change, or project managed with the workflow CLI, and whenever deciding what to do next. Explains the optional brainstorm step, how the coding agent implements directly, and how to run several brainstorms as one batch. Read before starting any code."
 ---
 
 # Workflow Overview
@@ -21,6 +21,11 @@ brainstorm (optional)  ──►  implement  ──►  commit
 
 Brainstorming is a tool, not a gate: reach for it when a moment of explicit design
 will help, and skip it when the change is small and well understood.
+
+**Several brainstorms to build at once?** Run them as a batch (use the
+**batch-execution** skill): the notes are reviewed and ordered, the developer
+approves once, and each task is then implemented by its own subagent, one after
+another. At most one batch runs at a time.
 
 ## Prime directive
 
@@ -51,6 +56,11 @@ Brainstorm notes are managed through the `workflow` CLI. Key commands:
 | `workflow brainstorm new "<title>"` | Create a brainstorm note. |
 | `workflow brainstorm list` | List brainstorm notes. |
 | `workflow brainstorm delete "<name>"` | Delete a note once its design has been implemented. |
+| `workflow batch create "<name>" …` | Queue several notes as one sequential batch, in execution order. |
+| `workflow batch status` / `next` | See the batch, or the task to run next. |
+| `workflow batch start/done/fail <id>` | Move a task through the run. |
+| `workflow batch stop` / `resume` / `remove` / `revert` | The developer's controls over a running batch. |
+| `workflow batch clear` | Delete a finished batch (and the notes that shipped), freeing the slot. |
 
 Run `workflow` with no arguments for full usage.
 
@@ -62,6 +72,8 @@ brainstorm precise.
 
 - **Idea is rough / not fully specified?** → use the **brainstorming** skill
   (optional — skip it when the change is clear).
+- **Several notes to build in one unattended run?** → use the **batch-execution**
+  skill.
 - **Need to find or change the right code (or the structure shifted)?** → use the
   **internals** skill.
 
@@ -82,4 +94,5 @@ Whether you brainstormed first or went straight in, when you build a change:
 ## Hard gates
 
 - Do not commit until the change works, the developer confirms, and docs/internals
-  are updated.
+  are updated. In a batch the developer confirms **once**, by approving the batch
+  plan; everything else still applies to every task in it.

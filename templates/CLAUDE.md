@@ -26,10 +26,16 @@ real work: run `workflow manifesto info` / `workflow internals info` for
 instructions, then write the manifesto by interviewing the developer and the
 internals map from the codebase — do not invent them.
 
-## Brainstorm notes are managed by the CLI
+## Brainstorm notes and batches are managed by the CLI
 
 Manage brainstorm notes through the `workflow` CLI (run `workflow` with no
 arguments for usage), rather than hand-creating files in `extras/brainstorm/`.
+
+When several notes should be built in one unattended run, use the
+**batch-execution** skill and `workflow batch` — never hand-edit
+`extras/batch/batch.json`. One batch runs at a time: until it is cleared, the
+developer can stop it, revert a finished task, or drop queued ones, but not start
+another.
 
 ## Keep docs honest
 

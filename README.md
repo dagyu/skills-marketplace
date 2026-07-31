@@ -5,11 +5,12 @@ inspired by [superpowers](https://github.com/obra/superpowers). It combines two
 layers:
 
 1. **A `workflow` CLI** (TypeScript, run with [Bun](https://bun.sh)) — the data
-   layer. It manages brainstorm notes on disk, plus the manifesto/internals
-   scaffolding.
+   layer. It manages brainstorm notes and batch runs on disk, plus the
+   manifesto/internals scaffolding.
 2. **A set of skills** (a Claude Code plugin) — the process layer. They guide the
-   agent to brainstorm when useful, implement directly, and enforce the rules:
-   manifesto guidelines, honest docs, developer-confirmed commits.
+   agent to brainstorm when useful, implement directly, run a batch of
+   brainstorms unattended, and enforce the rules: manifesto guidelines, honest
+   docs, developer-confirmed commits.
 
 ## The flow
 
@@ -17,6 +18,7 @@ layers:
 |---|---|---|
 | **Brainstorm** (optional) | Refine a rough idea into an agreed design. Skip it when the change is already clear. | A markdown note in `extras/brainstorm/`. |
 | **Implement** | The coding agent builds the change directly — from the brainstorm note or straight from the request: code → confirm → docs → commit. | Working code, updated docs, one commit; the note deleted once implemented. |
+| **Batch** (optional) | Several notes at once: the agent reviews each one, clarifies it, orders them, and — on a single approval — implements them one after another with a subagent per task. | One commit per task, run sequentially; the batch state in `extras/batch/batch.json`. |
 
 `extras/manifesto/MANIFESTO.md` holds the project's vision and non-negotiable
 guidelines; every change must respect it.
@@ -27,6 +29,7 @@ guidelines; every change must respect it.
 <project>/
 ├── extras/
 │   ├── brainstorm/          # one markdown note per idea
+│   ├── batch/batch.json     # the current batch run, if any (created on demand)
 │   ├── manifesto/MANIFESTO.md   # vision + guidelines (stub → `workflow manifesto info`)
 │   └── internals/INTERNALS.md   # code-structure map (stub → `workflow internals info`)
 ├── docs/                    # project documentation
@@ -63,7 +66,17 @@ workflow internals info                        # how to populate INTERNALS.md (t
 workflow brainstorm new "Add login"            # create a brainstorm note
 workflow brainstorm list
 workflow brainstorm delete "Add login"         # remove a note once it is implemented
+
+workflow batch create "Add login" "Cache API"  # queue notes as one run, in execution order
+workflow batch status                          # where the run is
+workflow batch next                            # the task to execute now
+workflow batch stop | resume | remove <id> | revert <id>
+workflow batch clear                           # finish up: drop the batch, delete shipped notes
 ```
+
+Only one batch exists at a time: while it is live the developer can stop it,
+revert a finished task, or drop queued ones — but a new batch has to wait until
+this one is cleared.
 
 See [`docs/`](docs/) for full documentation.
 

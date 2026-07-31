@@ -67,3 +67,8 @@ Once the developer has approved the note, implement the design directly (see
 map, build and verify the change, confirm with the developer, update docs, and
 commit. When the note's design is fully implemented and committed, delete it with
 `workflow brainstorm delete`.
+
+If several notes are waiting and the developer wants them all built in one run,
+use the **batch-execution** skill instead of implementing them one by one. Notes
+headed for a batch must be self-contained: the subagent that implements one sees
+only the note, so anything agreed in conversation belongs *in the note*.

@@ -1,4 +1,5 @@
 #!/usr/bin/env bun
+import { runBatch } from "./commands/batch.ts";
 import { runBrainstorm } from "./commands/brainstorm.ts";
 import { runInternals, runManifesto } from "./commands/docinfo.ts";
 import { runInit } from "./commands/init.ts";
@@ -12,6 +13,7 @@ Usage:
   workflow manifesto info       How to populate extras/manifesto/MANIFESTO.md
   workflow internals info       How to populate extras/internals/INTERNALS.md
   workflow brainstorm <cmd>     Manage brainstorm notes (new, list, delete)
+  workflow batch <cmd>          Run a queue of brainstorms back to back (create, status, …)
 
 Options:
   -v, --version                 Print the version and build time
@@ -38,6 +40,9 @@ async function main(argv: string[]): Promise<number> {
         return 0;
       case "brainstorm":
         runBrainstorm(rest);
+        return 0;
+      case "batch":
+        runBatch(rest);
         return 0;
       case undefined:
       case "-h":

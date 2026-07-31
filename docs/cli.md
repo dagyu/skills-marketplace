@@ -47,3 +47,31 @@ the developer, and the internals map from the codebase.
 | `workflow brainstorm new "<title>"` | Create `extras/brainstorm/<slug>.md` seeded with the title heading. Prints the path. |
 | `workflow brainstorm list` | List notes with their titles. |
 | `workflow brainstorm delete "<name>"` | Delete `extras/brainstorm/<slug>.md` (accepts the note's title or slug). Errors non-zero if no such note exists. Use it to clear a note once its design has been implemented. |
+
+## `workflow batch`
+
+A **batch** runs several brainstorm notes back to back, one task at a time. Its
+state lives in `extras/batch/batch.json`, written only by `src/lib/batch-store.ts`.
+The notes themselves are the task specs — a batch references them, it does not
+copy them.
+
+**At most one batch exists at a time.** `create` refuses while another is on disk,
+so a new batch is only possible after the current one is stopped or completed and
+then cleared. This is what stops a second run being queued on top of a live one.
+
+| Command | Description |
+|---|---|
+| `workflow batch create "<name>" …` | Queue the named notes (title or slug) as tasks. **Argument order is execution order.** Validates that each note exists and that none is listed twice; assigns each task a stable id. |
+| `workflow batch status [--json]` | Print the batch, its status (`active`, `stopped`, `completed`) and every task. `--json` emits the raw record. |
+| `workflow batch next [--json]` | Print the next task to execute — the first pending one, and only while the batch is active. |
+| `workflow batch start <id>` | Mark a task in progress. Refuses unless it is the next pending task and nothing else is running: this is what keeps a batch sequential. |
+| `workflow batch done <id> [--commit <sha>]` | Close the in-progress task as implemented, recording the commit that shipped it. |
+| `workflow batch fail <id> --reason <why>` | Close it as failed and stop the batch. `--reason` is required. |
+| `workflow batch stop [--reason <why>]` | Halt execution. An in-progress task returns to `pending` (with a note) so a resumed batch re-runs it from a known state. |
+| `workflow batch resume` | Return a stopped batch to `active`. Failed tasks stay failed; the run picks up at the next pending task. |
+| `workflow batch remove <id…>` | Drop queued tasks. Only `pending` tasks can be removed; the remaining ids do not shift. Their brainstorm notes are left alone. |
+| `workflow batch revert <id>` | Mark a `done` task reverted and print `git revert --no-edit <sha>` for it. The CLI never runs git itself — it records state and tells you the command. |
+| `workflow batch clear` | Delete the batch, freeing the slot. Refuses while the batch is `active` (stop it first). Deletes the brainstorm notes of tasks that shipped and keeps the rest. |
+
+Task statuses are `pending`, `in-progress`, `done`, `failed`, and `reverted`. A
+batch flips itself to `completed` once no task is pending or in progress.
