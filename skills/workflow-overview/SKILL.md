@@ -39,6 +39,12 @@ silently violating it.
 that says where each kind of change lives. Use the **internals** skill to consult
 it and to keep it honest when the structure changes.
 
+**The one exception — implementing a brainstorm note.** Both files were read while
+the note was written, and what they imply for that change is captured in the note.
+Building a note (alone or as part of a batch) reads the note, not the docs. Open
+them again only if the note turns out to be wrong about the rules or the layout —
+and then correct the note. This keeps each implementation's context small.
+
 If either file is still a stub marked **"Not yet written"** (fresh from `init`),
 populate it first: run `workflow manifesto info` / `workflow internals info` for
 instructions, then write the manifesto by interviewing the developer and the
@@ -83,12 +89,16 @@ brainstorm precise.
 
 Whether you brainstormed first or went straight in, when you build a change:
 
-1. **Respect the manifesto** (`extras/manifesto/MANIFESTO.md`) and the internals
-   map (`extras/internals/INTERNALS.md`).
+1. **Know the constraints.** From a brainstorm note: the note *is* the spec —
+   goal, approach, decisions, and where it lives are all in it, so do not re-read
+   `MANIFESTO.md` or `INTERNALS.md`. Without a note: read both first.
 2. **Build it** — how you build (test-first, tests-after, or otherwise) is up to
    you and the developer. Keep it minimal (YAGNI) and verify it actually works.
-3. **Confirm with the developer**, then **update docs/`README.md` and
-   `INTERNALS.md`** in the same change when behaviour or structure changed.
+3. **Confirm with the developer**, then **update the docs that cover what you
+   changed** — the specific `docs/` page, `README.md` only if what it documents
+   changed, and `INTERNALS.md` only if the structure moved (that update is the one
+   good reason to open the map). In a batch, subagents skip the internals update
+   and report the structural change instead; it is recorded once at the end.
 4. **Commit** with the conventional-commit skill (`cmd-llm-conventional-commit`),
    on the developer's go-ahead. If the change came from a brainstorm note that is
    now fully implemented, delete the note (`workflow brainstorm delete`).

@@ -34,10 +34,14 @@ cleared with `workflow batch clear`. Never work around this by hand-editing
 
 ## 1. Select
 
-Run `workflow brainstorm list` and have the developer pick the notes. Read the
-manifesto (`extras/manifesto/MANIFESTO.md`) and the internals map
-(`extras/internals/INTERNALS.md`) before judging any of them. Echo the exact list
-back before reviewing it.
+Run `workflow brainstorm list` and have the developer pick the notes. Echo the
+exact list back before reviewing it.
+
+The notes are the only input this batch needs. `MANIFESTO.md` and `INTERNALS.md`
+were read when each note was written and their bearing on the change is captured
+in it — do not open them to review or to run the batch. Read one only if a note
+makes a claim about the project's rules or layout that you have concrete reason to
+doubt.
 
 ## 2. Review — a gate
 
@@ -46,7 +50,7 @@ Read every selected note in full and give it a verdict on all three tests:
 | Test | Passes when |
 |---|---|
 | **Clear** | The goal is one sentence, the approach is decided, there are no open questions, and "done" is something you can check. |
-| **Executable** | It fits the manifesto, the codebase actually supports it, and nothing it needs is missing. A dependency on another note *in this batch* is an ordering constraint, not a blocker; a dependency on something unbuilt and unqueued blocks it. |
+| **Executable** | It says where it lives, the codebase actually supports it, and nothing it needs is missing. A dependency on another note *in this batch* is an ordering constraint, not a blocker; a dependency on something unbuilt and unqueued blocks it. |
 | **Right-sized** | One focused change, landing as one commit in one sitting. |
 
 Signs a note is **too big**: its goal sentence needs an "and"; it touches
@@ -106,17 +110,25 @@ Loop until `workflow batch next` reports nothing to run:
 1. `workflow batch next` — gives the task id and its spec path.
 2. `workflow batch start <id>`.
 3. **Spawn one subagent** for that task, and only that task. Its prompt must
-   stand alone: read the spec at `<path>`, read `extras/manifesto/MANIFESTO.md`
-   and `extras/internals/INTERNALS.md`, implement the design, verify it works,
-   update `docs/`, `README.md`, and `INTERNALS.md` where behaviour or structure
-   changed, **do not commit**, and report what changed, whether verification
-   passed, and anything it could not resolve.
+   stand alone: read the spec at `<path>` — **and nothing else by default; the
+   spec already carries the manifesto and internals context, so do not open
+   `MANIFESTO.md` or `INTERNALS.md`** — implement the design, verify it works,
+   update **only the doc pages covering the surface it changed** (the specific
+   `docs/` page, and `README.md` only if what it documents changed), **do not
+   commit**, and report what changed, whether verification passed, any structural
+   change worth recording in the internals map, and anything it could not resolve.
+
+   It does **not** touch `INTERNALS.md` — editing the map means reading it, which
+   is what we are avoiding, and ten subagents editing one file collide. It reports
+   the structural change instead; you record them all in step 8.
 4. **Verify the result yourself** — run the tests or build. A subagent's report
    is a claim, not evidence.
 5. **Commit** with the conventional-commit skill (`cmd-llm-conventional-commit`).
 6. `git rev-parse --short HEAD`, then
    `workflow batch done <id> --commit <sha>`.
-7. Leave the working tree clean before taking the next task.
+7. **Keep a running note of the structural changes reported** — module moved,
+   command added, boundary renamed — for the single internals update at the end.
+8. Leave the working tree clean before taking the next task.
 
 If a task cannot be completed — verification fails, the design turns out wrong,
 or a decision surfaces that the developer must make —
@@ -125,8 +137,13 @@ it and wait. Never skip ahead to the next task.
 
 ## 8. Finish
 
-When `workflow batch status` reads *completed*, summarise what shipped (task,
-commit, how long it took — one line each), then run `workflow batch clear`. That
+First, **update the internals map once** for the whole run. Take the structural
+changes you collected in step 7, open `extras/internals/INTERNALS.md`, fold them
+all in, and commit that as its own change. One read, one edit, one commit —
+instead of one per task. Skip it when nothing structural moved.
+
+Then, when `workflow batch status` reads *completed*, summarise what shipped (task,
+commit, how long it took — one line each), and run `workflow batch clear`. That
 appends the run to `extras/batch/history` — the permanent record of which tasks
 ran, how long each took, and what each committed — deletes the brainstorm notes of
 the tasks that shipped, and keeps the notes of anything removed, failed, or
@@ -165,6 +182,10 @@ create the batch. Two things follow from it:
 - A note entering the batch with open questions, or one you privately think is
   too big.
 - A subagent prompt that relies on context only you have — put it in the note.
+- Re-reading `MANIFESTO.md` or `INTERNALS.md` to review or run the batch. The note
+  is the spec; if it is missing that context, fix the note.
+- A subagent editing `INTERNALS.md`. It reports the structural change; you record
+  it once at the end.
 - Continuing past a failed task instead of stopping and reporting.
 - Creating a second batch, or hand-editing `extras/batch/`.
 - Marking a task done on the subagent's word, without running anything yourself.

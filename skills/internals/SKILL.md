@@ -37,6 +37,11 @@ manifesto has the same pattern — `workflow manifesto info`.
 3. If the map is silent, wrong, or contradicts what you find in the code, **trust
    the code** and fix the map (see below) — do not propagate stale guidance.
 
+**Not when implementing a brainstorm note.** The note was written against this map
+and records where its change lives, so building it (alone or in a batch) skips
+step 1 entirely. Come back here only if the note's **Where it lives** section turns
+out to be wrong — then fix both the note and, if the map misled it, the map.
+
 ## Keep the map honest
 
 The map is only useful if it matches reality. Update

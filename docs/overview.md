@@ -48,7 +48,9 @@ structured place to *record the work*. Two project-owned documents sit above bot
 the manifesto (`extras/manifesto/MANIFESTO.md`) is the source of guidelines every
 phase must honour, and the internals map (`extras/internals/INTERNALS.md`) — an
 extension of `CLAUDE.md` — tells the agent where the code lives so changes land in
-the right place.
+the right place. Both are read when a brainstorm note is written, and what they
+mean for that change is written into the note; implementing the note then reads
+only the note, so a batch of ten does not reload both documents ten times.
 
 See [cli.md](cli.md) for the command reference and [skills.md](skills.md) for the
 skill details.

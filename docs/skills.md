@@ -14,12 +14,18 @@ agent which skill to invoke when.
 
 ## brainstorming
 
-Refines a rough idea into an agreed design. Reads the manifesto, explores context,
-asks clarifying questions, proposes approaches, and — only after the developer
-agrees — captures a note with `workflow brainstorm new`. **Optional**: when the
-change is already clear, the agent skips it and implements directly. After the note
-is approved, the agent implements the design directly and deletes the note once it
-is committed.
+Refines a rough idea into an agreed design. Reads the manifesto and the internals
+map, explores context, asks clarifying questions, proposes approaches, and — only
+after the developer agrees — captures a note with `workflow brainstorm new`,
+including a **Where it lives** section carrying over the files to touch and the
+manifesto rules that constrain the change. **Optional**: when the change is already
+clear, the agent skips it and implements directly. After the note is approved, the
+agent implements the design directly and deletes the note once it is committed.
+
+That one read is deliberate: because the note carries the context,
+**implementation never re-reads `MANIFESTO.md` or `INTERNALS.md`** — single or
+batch, the note is the whole spec. It reopens them only if the note proves wrong
+about the rules or the layout, and then the note is corrected.
 
 ## batch-execution
 
@@ -30,7 +36,10 @@ note**, because the subagent that implements it sees only the note. The agent th
 chooses the order (dependencies first, foundations before consumers, smaller and
 safer first) and gets one approval for the whole batch, which explicitly covers
 each task's commit. Execution is strictly sequential: `batch next` → `batch start`
-→ one subagent → verify → commit → `batch done --commit <sha>`. A failure calls
+→ one subagent → verify → commit → `batch done --commit <sha>`. Each subagent
+updates only the doc pages for the surface it changed and never edits
+`INTERNALS.md`; it reports structural changes instead, and the map is updated once
+for the whole run at the end. A failure calls
 `batch fail`, which stops the batch. Mid-run the developer can stop, resume,
 revert a finished task, or remove queued ones — and watch the whole thing in the
 browser via `workflow serve`, which the agent suggests but never starts itself. A

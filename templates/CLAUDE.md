@@ -21,6 +21,11 @@ use when.
   you reach for the right module the first time, and keep it up to date when the
   structure changes.
 
+**Exception — implementing a brainstorm note.** Both files were read when the note
+was written and their bearing on the change is recorded in it. Build the note from
+the note alone; re-read these files only if it proves wrong about the rules or the
+layout, and then fix the note.
+
 If either file is still a stub marked **"Not yet written"**, populate it before
 real work: run `workflow manifesto info` / `workflow internals info` for
 instructions, then write the manifesto by interviewing the developer and the
@@ -39,5 +44,9 @@ another.
 
 ## Keep docs honest
 
-When a change alters behaviour, update `docs/`, `README.md`, and — if the
-structure changed — `extras/internals/INTERNALS.md`, in the same commit.
+When a change alters behaviour, update the docs that cover it — the `docs/` page
+for that surface, `README.md` if what it documents changed, and
+`extras/internals/INTERNALS.md` if the structure moved — in the same commit. Touch
+only the pages the change actually affects. In a batch, subagents leave
+`INTERNALS.md` alone and report structural changes; the map is updated once at the
+end of the run.
