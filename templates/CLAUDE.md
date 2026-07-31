@@ -33,7 +33,7 @@ arguments for usage), rather than hand-creating files in `extras/brainstorm/`.
 
 When several notes should be built in one unattended run, use the
 **batch-execution** skill and `workflow batch` — never hand-edit
-`extras/batch/batch.json`. One batch runs at a time: until it is cleared, the
+`extras/batch/`. One batch runs at a time: until it is cleared, the
 developer can stop it, revert a finished task, or drop queued ones, but not start
 another.
 

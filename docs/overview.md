@@ -13,9 +13,13 @@ binary works in any project.
 The CLI owns:
 
 - **Brainstorm notes** — markdown files in `extras/brainstorm/`.
-- **Batches** — `extras/batch/batch.json`: an ordered queue of notes to implement
-  back to back, plus the rules that keep the run sequential and single (see
+- **Batches** — `extras/batch/`: an ordered queue of notes to implement back to
+  back, the rules that keep the run sequential and single, and the history of
+  finished runs. Both files use a compact line-oriented format rather than JSON,
+  because they are committed and rewritten constantly (see
   [cli.md](cli.md#workflow-batch)).
+- **A local preview server** — `workflow serve`, a browser view of the notes
+  (readable and editable) and of the batch as it runs.
 - **Scaffolding** — the manifesto and internals stubs, `docs/`, `CLAUDE.md`, and a
   starter `README.md`, all written by `workflow init`.
 

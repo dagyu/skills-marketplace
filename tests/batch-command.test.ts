@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, test } from "bun:test";
-import { existsSync, mkdtempSync, rmSync } from "node:fs";
+import { existsSync, mkdtempSync, readFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
@@ -173,5 +173,51 @@ describe("workflow batch clear", () => {
     const res = await wf("batch", "clear");
     expect(res.code).toBe(1);
     expect(res.stderr).toContain("still active");
+  });
+});
+
+describe("workflow batch history", () => {
+  test("records each cleared run with its tasks, timings and commits", async () => {
+    expect((await wf("batch", "history")).stdout).toContain("No finished runs yet");
+
+    await notes("Add login", "Rate limit the API");
+    await wf("batch", "create", "add-login", "rate-limit-the-api");
+    await wf("batch", "start", "1");
+    await wf("batch", "done", "1", "--commit", "abc1234");
+    await wf("batch", "start", "2");
+    await wf("batch", "fail", "2", "--reason", "the suite is red");
+    await wf("batch", "clear");
+
+    const history = await wf("batch", "history");
+    expect(history.stdout).toContain("1/2 shipped");
+    expect(history.stdout).toContain("#1  done        Add login");
+    expect(history.stdout).toContain("abc1234");
+    expect(history.stdout).toContain("the suite is red");
+
+    const runs = JSON.parse((await wf("batch", "history", "--json")).stdout);
+    expect(runs).toHaveLength(1);
+    expect(runs[0].tasks[0].seconds).toBeGreaterThanOrEqual(0);
+  });
+
+  test("stores the run as tab-separated records, not JSON", async () => {
+    await notes("Add login");
+    await wf("batch", "create", "add-login");
+    await wf("batch", "start", "1");
+    await wf("batch", "done", "1", "--commit", "abc1234");
+    await wf("batch", "clear");
+
+    const history = readFileSync(join(project, "extras/batch/history"), "utf8");
+    const [header, task] = history.trimEnd().split("\n");
+    expect(header!.split("\t")[0]).toBe("b");
+    expect(task!.split("\t").slice(0, 4)).toEqual(["t", "1", "d", "add-login"]);
+    expect(history).not.toContain("{");
+  });
+
+  test("the live batch file is the same compact format", async () => {
+    await notes("Add login");
+    await wf("batch", "create", "add-login");
+    const live = readFileSync(join(project, "extras/batch/batch"), "utf8");
+    expect(live).toMatch(/^b\ta\t\d+\n/);
+    expect(live).toContain("t\t1\tp\tadd-login\tAdd login\n");
   });
 });

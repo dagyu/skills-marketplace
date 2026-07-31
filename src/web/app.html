@@ -1,0 +1,325 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>workflow preview</title>
+<style>
+  :root {
+    --bg: #fbfbfa; --panel: #fff; --line: #e4e2dd; --ink: #1c1b19; --dim: #706c64;
+    --accent: #2f6f4f; --warn: #9a6b00; --bad: #a03127; --shadow: 0 1px 2px rgba(0,0,0,.05);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #17181a; --panel: #1e2023; --line: #2f3236; --ink: #e8e6e3; --dim: #9a958c;
+      --accent: #7cc39a; --warn: #d8a43c; --bad: #e0806f; --shadow: none;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--ink);
+    font: 15px/1.6 ui-sans-serif, -apple-system, "Segoe UI", Roboto, sans-serif;
+  }
+  header {
+    display: flex; align-items: baseline; gap: 10px; padding: 12px 20px;
+    border-bottom: 1px solid var(--line); background: var(--panel); position: sticky; top: 0; z-index: 2;
+  }
+  header b { font-size: 15px; letter-spacing: .02em; }
+  header .root { color: var(--dim); font-size: 13px; font-family: ui-monospace, monospace; }
+  header .live { margin-left: auto; color: var(--dim); font-size: 12px; }
+  main { display: grid; grid-template-columns: 300px 1fr; align-items: start; gap: 20px; padding: 20px; max-width: 1200px; }
+  @media (max-width: 800px) { main { grid-template-columns: 1fr; } }
+  .card { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; box-shadow: var(--shadow); }
+  aside { display: flex; flex-direction: column; gap: 16px; }
+  h2 { font-size: 12px; text-transform: uppercase; letter-spacing: .08em; color: var(--dim); margin: 0; padding: 12px 14px 0; }
+  ul { list-style: none; margin: 0; padding: 8px; display: flex; flex-direction: column; gap: 2px; }
+  li button {
+    width: 100%; text-align: left; background: none; border: 0; border-radius: 6px; padding: 7px 8px;
+    color: inherit; font: inherit; cursor: pointer; display: flex; align-items: center; gap: 8px;
+  }
+  li button:hover { background: color-mix(in srgb, var(--ink) 6%, transparent); }
+  li button[aria-current="true"] { background: color-mix(in srgb, var(--accent) 16%, transparent); }
+  li .slug { color: var(--dim); font-size: 11px; font-family: ui-monospace, monospace; }
+  .empty { padding: 10px 14px 14px; color: var(--dim); font-size: 13px; }
+  .pill {
+    font-size: 10px; text-transform: uppercase; letter-spacing: .06em; padding: 2px 6px;
+    border-radius: 999px; border: 1px solid currentColor; white-space: nowrap;
+  }
+  .s-pending { color: var(--dim); }
+  .s-running { color: var(--warn); }
+  .s-done { color: var(--accent); }
+  .s-failed { color: var(--bad); }
+  .s-reverted { color: var(--dim); text-decoration: line-through; }
+  .task { display: grid; grid-template-columns: 20px 1fr auto; gap: 8px; align-items: baseline; padding: 6px 14px; }
+  .task .id { color: var(--dim); font-size: 11px; font-family: ui-monospace, monospace; }
+  .task .meta { color: var(--dim); font-size: 11px; font-family: ui-monospace, monospace; }
+  .task .why { grid-column: 2 / -1; color: var(--bad); font-size: 12px; }
+  .bar { padding: 10px 14px; border-bottom: 1px solid var(--line); display: flex; align-items: center; gap: 10px; }
+  .grow { flex: 1; min-width: 0; }
+  button.act {
+    font: inherit; font-size: 13px; padding: 5px 12px; border-radius: 6px; cursor: pointer;
+    border: 1px solid var(--line); background: var(--bg); color: inherit;
+  }
+  button.act:hover { border-color: var(--dim); }
+  button.act.primary { background: var(--accent); border-color: var(--accent); color: var(--panel); }
+  button.act:disabled { opacity: .5; cursor: not-allowed; }
+  .doc { padding: 4px 22px 22px; overflow-wrap: anywhere; }
+  .doc h1 { font-size: 22px; margin: 18px 0 8px; }
+  .doc h2 { font-size: 15px; text-transform: none; letter-spacing: 0; color: var(--ink); padding: 0; margin: 20px 0 6px; }
+  .doc h3 { font-size: 14px; margin: 16px 0 4px; }
+  .doc ul, .doc ol { padding-left: 20px; list-style: disc; display: block; }
+  .doc ol { list-style: decimal; }
+  .doc li { display: list-item; margin: 2px 0; }
+  .doc code { font-family: ui-monospace, monospace; font-size: .88em; background: color-mix(in srgb, var(--ink) 7%, transparent); padding: 1px 4px; border-radius: 4px; }
+  .doc pre { background: color-mix(in srgb, var(--ink) 6%, transparent); padding: 10px 12px; border-radius: 6px; overflow-x: auto; }
+  .doc pre code { background: none; padding: 0; }
+  .doc hr { border: 0; border-top: 1px solid var(--line); margin: 18px 0; }
+  .doc blockquote { margin: 8px 0; padding-left: 12px; border-left: 2px solid var(--line); color: var(--dim); }
+  textarea {
+    width: 100%; min-height: 60vh; border: 0; border-radius: 0 0 8px 8px; padding: 16px 22px; resize: vertical;
+    background: none; color: inherit; font: 13px/1.7 ui-monospace, SFMono-Regular, Menlo, monospace;
+  }
+  textarea:focus { outline: none; }
+  .note { padding: 10px 14px; font-size: 13px; color: var(--warn); border-top: 1px solid var(--line); }
+  .placeholder { padding: 60px 22px; text-align: center; color: var(--dim); }
+  .run { border-top: 1px solid var(--line); padding: 10px 0 6px; }
+  .run:first-child { border-top: 0; }
+  .run .head { padding: 0 14px 4px; font-size: 12px; color: var(--dim); font-family: ui-monospace, monospace; }
+</style>
+</head>
+<body>
+<header>
+  <b>workflow</b>
+  <span class="root" id="root"></span>
+  <span class="live" id="live">connecting…</span>
+</header>
+<main>
+  <aside>
+    <div class="card" id="batch"></div>
+    <div class="card">
+      <h2>Brainstorms</h2>
+      <ul id="notes"></ul>
+    </div>
+    <div class="card" id="history"></div>
+  </aside>
+  <section class="card" id="view">
+    <div class="placeholder">Pick a brainstorm to read or edit it.</div>
+  </section>
+</main>
+<script>
+"use strict";
+const $ = (id) => document.getElementById(id);
+let state = null;      // last /api/state payload
+let selected = null;   // slug being viewed
+let note = null;       // { slug, title, content, locked }
+let editing = false;
+let dirty = "";        // in-progress edit buffer, so a poll never clobbers typing
+let saving = false;
+
+const STATUS_CLASS = {
+  pending: "s-pending", "in-progress": "s-running", done: "s-done",
+  failed: "s-failed", reverted: "s-reverted",
+};
+
+function esc(s) {
+  return s.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+}
+
+function secs(n) {
+  if (n === undefined || n === null) return "";
+  if (n < 60) return n + "s";
+  const m = Math.floor(n / 60);
+  if (m < 60) return m + "m " + String(n % 60).padStart(2, "0") + "s";
+  return Math.floor(m / 60) + "h " + String(m % 60).padStart(2, "0") + "m";
+}
+
+/** Just enough markdown for a brainstorm note — headings, lists, code, emphasis. */
+function md(src) {
+  const out = [];
+  let list = null, fence = null, buf = [];
+  const flush = () => { if (buf.length) { out.push("<p>" + inline(buf.join(" ")) + "</p>"); buf = []; } };
+  const closeList = () => { if (list) { out.push("</" + list + ">"); list = null; } };
+
+  for (const raw of src.split("\n")) {
+    const line = raw.replace(/\s+$/, "");
+    const fenced = line.match(/^```(\w*)\s*$/);
+    if (fenced) {
+      if (fence === null) { flush(); closeList(); fence = []; }
+      else { out.push("<pre><code>" + esc(fence.join("\n")) + "</code></pre>"); fence = null; }
+      continue;
+    }
+    if (fence !== null) { fence.push(raw); continue; }
+
+    if (line.trim() === "") { flush(); closeList(); continue; }
+    const h = line.match(/^(#{1,6})\s+(.*)$/);
+    if (h) { flush(); closeList(); out.push(`<h${h[1].length}>${inline(h[2])}</h${h[1].length}>`); continue; }
+    if (/^(-{3,}|\*{3,})$/.test(line.trim())) { flush(); closeList(); out.push("<hr>"); continue; }
+    const q = line.match(/^>\s?(.*)$/);
+    if (q) { flush(); closeList(); out.push("<blockquote>" + inline(q[1]) + "</blockquote>"); continue; }
+    const item = line.match(/^\s*([-*+]|\d+\.)\s+(.*)$/);
+    if (item) {
+      const kind = /\d/.test(item[1]) ? "ol" : "ul";
+      flush();
+      if (list !== kind) { closeList(); out.push("<" + kind + ">"); list = kind; }
+      out.push("<li>" + inline(item[2]) + "</li>");
+      continue;
+    }
+    buf.push(line.trim());
+  }
+  if (fence !== null) out.push("<pre><code>" + esc(fence.join("\n")) + "</code></pre>");
+  flush(); closeList();
+  return out.join("\n");
+}
+
+function inline(text) {
+  return esc(text)
+    .replace(/`([^`]+)`/g, "<code>$1</code>")
+    .replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>")
+    .replace(/(^|[^*])\*([^*]+)\*/g, "$1<em>$2</em>")
+    .replace(/\[([^\]]+)\]\(([^)\s]+)\)/g, '<a href="$2" rel="noreferrer">$1</a>');
+}
+
+async function poll() {
+  try {
+    const res = await fetch("/api/state");
+    state = await res.json();
+    // The server's clock is the one the timings were recorded against.
+    state.skew = state.now - Math.floor(Date.now() / 1000);
+    $("live").textContent = "live";
+    render();
+    if (selected && !editing) await loadNote(selected, true);
+  } catch {
+    $("live").textContent = "server stopped";
+  }
+}
+
+async function loadNote(slug, quiet) {
+  const res = await fetch("/api/note/" + encodeURIComponent(slug));
+  if (!res.ok) { note = null; selected = null; renderView(); return; }
+  const next = await res.json();
+  // Re-rendering identical content would fight the scroll position.
+  if (quiet && note && note.content === next.content && note.locked === next.locked) return;
+  note = next;
+  renderView();
+}
+
+function select(slug) {
+  if (editing && !confirm("Discard your unsaved edits?")) return;
+  editing = false;
+  selected = slug;
+  note = null;
+  renderSidebar();
+  loadNote(slug);
+}
+
+async function save() {
+  saving = true; renderView();
+  const res = await fetch("/api/note/" + encodeURIComponent(selected), {
+    method: "PUT", headers: { "content-type": "text/plain" }, body: dirty,
+  });
+  saving = false;
+  if (!res.ok) { alert(await res.text()); renderView(); return; }
+  editing = false;
+  await loadNote(selected);
+}
+
+function render() { renderBatch(); renderSidebar(); renderHistory(); }
+
+function renderSidebar() {
+  $("root").textContent = state ? state.root : "";
+  const tasks = state && state.batch ? state.batch.tasks : [];
+  const bySlug = Object.fromEntries(tasks.map((t) => [t.slug, t]));
+  const list = $("notes");
+  if (!state || state.brainstorms.length === 0) {
+    list.innerHTML = '<div class="empty">No brainstorm notes yet.</div>';
+    return;
+  }
+  list.innerHTML = state.brainstorms.map((n) => {
+    const task = bySlug[n.slug];
+    const pill = task ? `<span class="pill ${STATUS_CLASS[task.status]}">${task.status}</span>` : "";
+    return `<li><button data-slug="${esc(n.slug)}" aria-current="${n.slug === selected}">
+      <span class="grow">${esc(n.title)}<br><span class="slug">${esc(n.slug)}</span></span>${pill}
+    </button></li>`;
+  }).join("");
+  for (const b of list.querySelectorAll("button")) b.onclick = () => select(b.dataset.slug);
+}
+
+function taskRow(t, nowSec) {
+  const elapsed = t.status === "in-progress" && t.startedAt ? nowSec - t.startedAt : t.seconds;
+  const meta = [secs(elapsed), t.commit].filter(Boolean).join(" · ");
+  return `<div class="task">
+    <span class="id">#${t.id}</span>
+    <span>${esc(t.title)}</span>
+    <span class="pill ${STATUS_CLASS[t.status]}">${t.status}</span>
+    ${meta ? `<span class="meta" style="grid-column:2/-1">${esc(meta)}</span>` : ""}
+    ${t.note ? `<span class="why">${esc(t.note)}</span>` : ""}
+  </div>`;
+}
+
+function renderBatch() {
+  const el = $("batch");
+  if (!state || !state.batch) {
+    el.innerHTML = '<h2>Batch</h2><div class="empty">No batch running.</div>';
+    return;
+  }
+  const b = state.batch;
+  const nowSec = Math.floor(Date.now() / 1000) + (state.skew || 0);
+  const done = b.tasks.filter((t) => t.status === "done").length;
+  el.innerHTML = `<h2>Batch — ${b.status}</h2>
+    <div class="empty" style="padding-bottom:4px">${done}/${b.tasks.length} shipped</div>
+    ${b.tasks.map((t) => taskRow(t, nowSec)).join("")}<div style="height:8px"></div>`;
+}
+
+function renderHistory() {
+  const el = $("history");
+  const runs = state ? state.history : [];
+  if (!runs.length) { el.innerHTML = '<h2>History</h2><div class="empty">No finished runs yet.</div>'; return; }
+  el.innerHTML = "<h2>History</h2>" + runs.slice().reverse().map((r) => {
+    const total = r.tasks.reduce((s, t) => s + (t.seconds || 0), 0);
+    const shipped = r.tasks.filter((t) => t.status === "done").length;
+    const when = new Date(r.createdAt * 1000).toLocaleString();
+    return `<div class="run"><div class="head">${esc(when)} · ${r.status} · ${shipped}/${r.tasks.length} · ${secs(total)}</div>
+      ${r.tasks.map((t) => taskRow(t, 0)).join("")}</div>`;
+  }).join("");
+}
+
+function renderView() {
+  const el = $("view");
+  if (!selected || !note) {
+    el.innerHTML = '<div class="placeholder">Pick a brainstorm to read or edit it.</div>';
+    return;
+  }
+  const bar = `<div class="bar">
+    <b>${esc(note.title)}</b><span class="grow"></span>
+    ${editing
+      ? `<button class="act" id="cancel">Cancel</button><button class="act primary" id="save" ${saving ? "disabled" : ""}>${saving ? "Saving…" : "Save"}</button>`
+      : `<button class="act" id="edit" ${note.locked ? "disabled" : ""}>Edit</button>`}
+  </div>`;
+  const body = editing
+    ? `<textarea id="editor" spellcheck="false"></textarea>`
+    : `<div class="doc">${md(note.content)}</div>`;
+  const locked = note.locked && !editing
+    ? `<div class="note">A subagent is implementing this task right now — editing is locked until it finishes.</div>`
+    : "";
+  el.innerHTML = bar + locked + body;
+
+  if (editing) {
+    const editor = $("editor");
+    editor.value = dirty;
+    editor.oninput = () => { dirty = editor.value; };
+    $("cancel").onclick = () => { editing = false; renderView(); };
+    $("save").onclick = save;
+    editor.focus();
+  } else {
+    const edit = $("edit");
+    if (edit) edit.onclick = () => { editing = true; dirty = note.content; renderView(); };
+  }
+}
+
+poll();
+setInterval(poll, 2000);
+// Keep the running task's elapsed time ticking between polls.
+setInterval(() => { if (state && state.batch) renderBatch(); }, 1000);
+</script>
+</body>
+</html>

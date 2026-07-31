@@ -51,9 +51,9 @@ the developer, and the internals map from the codebase.
 ## `workflow batch`
 
 A **batch** runs several brainstorm notes back to back, one task at a time. Its
-state lives in `extras/batch/batch.json`, written only by `src/lib/batch-store.ts`.
-The notes themselves are the task specs — a batch references them, it does not
-copy them.
+state lives in `extras/batch/`, written only by `src/lib/batch-store.ts`. The
+notes themselves are the task specs — a batch references them, it does not copy
+them.
 
 **At most one batch exists at a time.** `create` refuses while another is on disk,
 so a new batch is only possible after the current one is stopped or completed and
@@ -71,7 +71,71 @@ then cleared. This is what stops a second run being queued on top of a live one.
 | `workflow batch resume` | Return a stopped batch to `active`. Failed tasks stay failed; the run picks up at the next pending task. |
 | `workflow batch remove <id…>` | Drop queued tasks. Only `pending` tasks can be removed; the remaining ids do not shift. Their brainstorm notes are left alone. |
 | `workflow batch revert <id>` | Mark a `done` task reverted and print `git revert --no-edit <sha>` for it. The CLI never runs git itself — it records state and tells you the command. |
-| `workflow batch clear` | Delete the batch, freeing the slot. Refuses while the batch is `active` (stop it first). Deletes the brainstorm notes of tasks that shipped and keeps the rest. |
+| `workflow batch clear` | Archive the batch to the history and delete the live file, freeing the slot. Refuses while the batch is `active` (stop it first). Deletes the brainstorm notes of tasks that shipped and keeps the rest. |
+| `workflow batch history [--json]` | Show past runs: each task, how long it took, and the commit it produced. |
 
 Task statuses are `pending`, `in-progress`, `done`, `failed`, and `reverted`. A
 batch flips itself to `completed` once no task is pending or in progress.
+
+### On-disk format
+
+Both files are line-oriented and tab-separated, not JSON. They live in git and are
+rewritten on every task transition, so the format is chosen to keep diffs small: a
+status change is a one-line diff, and there are no braces, quotes, or repeated key
+names to pay for. `src/lib/batch-format.ts` is the only module that knows it.
+
+```
+b	a	1753948128
+t	1	d	cache-user-profiles	Cache user profiles	1753948130	64	deadbee
+t	2	p	add-login-flow	Add login flow
+```
+
+- A **`b`** record opens a batch: status, then the creation time in epoch seconds
+  (which doubles as the run's id).
+- Each **`t`** record is one task, in execution order: id, status, slug, title,
+  start time, **seconds taken**, commit, note.
+- Statuses are single letters — `a`/`s`/`c` for a batch (active, stopped,
+  completed) and `p`/`r`/`d`/`f`/`v` for a task (pending, running, done, failed,
+  reverted).
+- A task records **how long it took** rather than a second timestamp, absent
+  trailing fields are dropped (a queued task costs five short fields), and tabs,
+  newlines and backslashes in free text are backslash-escaped.
+
+| File | Holds |
+|---|---|
+| `extras/batch/batch` | The live batch — one block. Deleted by `batch clear`. |
+| `extras/batch/history` | Every finished run, appended one block at a time. Append-only, so git stores each run as a few added lines. |
+
+The title is stored rather than re-read from the note, because `batch clear`
+deletes the notes that shipped and the history has to stay readable afterwards.
+Everything else — a task's spec path — is derived from its slug.
+
+## `workflow serve`
+
+Start a local web preview of the project's brainstorm notes and its batch run.
+
+```bash
+workflow serve                          # http://127.0.0.1:4242
+workflow serve --port 8080 --host 0.0.0.0
+```
+
+The page shows three things and refreshes itself every two seconds:
+
+- **Brainstorms** — every note in `extras/brainstorm/`, rendered as markdown.
+  Click one to read it, **Edit** to change it; saving writes straight to the file
+  on disk. A note whose task a subagent is implementing right now is **locked** —
+  the server rejects the write with `409` rather than change a spec out from under
+  a running task. Stop the batch to edit it.
+- **The live batch** — every task with its status, the running task's elapsed time
+  ticking, plus durations and commits as they land.
+- **History** — past runs read from `extras/batch/history`.
+
+It is a developer tool: it writes to the project's files and has no
+authentication, so it binds to loopback unless you pass `--host`. It never mutates
+a batch — stopping, reverting, and removing stay in the CLI, where the agent and
+the developer already coordinate.
+
+Routes, if you want to script against it: `GET /api/state` (notes, live batch,
+history), `GET /api/note/<slug>`, `PUT /api/note/<slug>` with the markdown as the
+body. These speak JSON over the wire — that is unrelated to how batches are
+*stored*.

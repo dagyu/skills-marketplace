@@ -1,10 +1,10 @@
 import { existsSync, readFileSync, rmSync } from "node:fs";
-import { join, relative } from "node:path";
+import { join } from "node:path";
 import { parseArgs } from "node:util";
 import { BatchStore } from "../lib/batch-store.ts";
 import { CliError, out } from "../lib/cli.ts";
 import { extractTitle } from "../lib/markdown.ts";
-import { resolveProjectPaths } from "../lib/paths.ts";
+import { notePath, resolveProjectPaths } from "../lib/paths.ts";
 import { slugify } from "../lib/slug.ts";
 import type { Batch, BatchTask, BatchTaskSpec } from "../types.ts";
 
@@ -19,10 +19,12 @@ const USAGE = `Usage:
   workflow batch resume                    Resume a stopped batch
   workflow batch remove <id…>              Drop not-yet-started tasks from the queue
   workflow batch revert <id>               Mark a done task reverted; prints the git command to undo it
-  workflow batch clear                     Delete the batch, freeing the slot for a new one`;
+  workflow batch clear                     Archive the batch to the history, freeing the slot
+  workflow batch history [--json]          Show past runs, their timings and commits`;
 
 function store(): BatchStore {
-  return new BatchStore(resolveProjectPaths().batchFile);
+  const p = resolveProjectPaths();
+  return new BatchStore(p.batchFile, p.historyFile);
 }
 
 export function runBatch(args: string[]): void {
@@ -50,6 +52,8 @@ export function runBatch(args: string[]): void {
       return batchRevert(rest);
     case "clear":
       return batchClear();
+    case "history":
+      return batchHistory(rest);
     default:
       throw new CliError(`Unknown batch command "${sub ?? ""}".\n${USAGE}`);
   }
@@ -69,10 +73,27 @@ function resolveNote(name: string): BatchTaskSpec {
   const slug = slugify(name);
   const file = join(p.brainstormDir, `${slug}.md`);
   if (!existsSync(file)) {
-    throw new CliError(`No brainstorm note "${slug}" (looked for extras/brainstorm/${slug}.md).`);
+    throw new CliError(`No brainstorm note "${slug}" (looked for ${notePath(slug)}).`);
   }
-  const title = extractTitle(readFileSync(file, "utf8")) ?? slug;
-  return { title, slug, path: relative(p.root, file) };
+  return { title: extractTitle(readFileSync(file, "utf8")) ?? slug, slug };
+}
+
+/** A task as the agent consumes it: the stored record plus its derived spec path. */
+function withPath(task: BatchTask): BatchTask & { path: string } {
+  return { ...task, path: notePath(task.slug) };
+}
+
+/** "45s", "3m 20s", "1h 04m" — compact enough to sit at the end of a task line. */
+export function formatSeconds(seconds: number | undefined): string {
+  if (seconds === undefined) return "";
+  if (seconds < 60) return `${seconds}s`;
+  const minutes = Math.floor(seconds / 60);
+  if (minutes < 60) return `${minutes}m ${pad(seconds % 60)}s`;
+  return `${Math.floor(minutes / 60)}h ${pad(minutes % 60)}m`;
+}
+
+function pad(n: number): string {
+  return String(n).padStart(2, "0");
 }
 
 function batchCreate(rest: string[]): void {
@@ -105,19 +126,19 @@ function batchStatus(rest: string[]): void {
   const batch = store().read();
 
   if (values.json) {
-    out(JSON.stringify(batch ?? null, null, 2));
+    out(JSON.stringify(batch ? { ...batch, tasks: batch.tasks.map(withPath) } : null, null, 2));
     return;
   }
   if (!batch) {
     out("No batch. Create one with `workflow batch create <name…>`.");
     return;
   }
-  out(`Batch: ${batch.status} (created ${batch.createdAt})`);
+  out(`Batch: ${batch.status} (created ${iso(batch.createdAt)})`);
   printTasks(batch);
 
   const next = batch.tasks.find((t) => t.status === "pending");
   if (batch.status === "completed") {
-    out("\nAll tasks finished. Run `workflow batch clear` to free the slot for a new batch.");
+    out("\nAll tasks finished. Run `workflow batch clear` to archive it and free the slot.");
   } else if (batch.status === "stopped") {
     out("\nStopped. `workflow batch resume` to continue, or `workflow batch clear` to drop it.");
   } else if (next) {
@@ -127,10 +148,15 @@ function batchStatus(rest: string[]): void {
 
 function printTasks(batch: Batch): void {
   for (const t of batch.tasks) {
+    const took = t.seconds !== undefined ? `  ${formatSeconds(t.seconds)}` : "";
     const commit = t.commit ? `  → ${t.commit}` : "";
     const note = t.note ? `  (${t.note})` : "";
-    out(`  #${t.id}  ${t.status.padEnd(11)} ${t.title}${commit}${note}`);
+    out(`  #${t.id}  ${t.status.padEnd(11)} ${t.title}${took}${commit}${note}`);
   }
+}
+
+function iso(epochSeconds: number): string {
+  return new Date(epochSeconds * 1000).toISOString();
 }
 
 function batchNext(rest: string[]): void {
@@ -143,7 +169,7 @@ function batchNext(rest: string[]): void {
   const task = st.next();
 
   if (values.json) {
-    out(JSON.stringify(task ?? null, null, 2));
+    out(JSON.stringify(task ? withPath(task) : null, null, 2));
     return;
   }
   if (task) {
@@ -159,7 +185,8 @@ function batchNext(rest: string[]): void {
 function printTask(t: BatchTask): void {
   out(`#${t.id}  ${t.title}`);
   out(`  status: ${t.status}`);
-  out(`  spec:   ${t.path}`);
+  out(`  spec:   ${notePath(t.slug)}`);
+  if (t.seconds !== undefined) out(`  took:   ${formatSeconds(t.seconds)}`);
   if (t.commit) out(`  commit: ${t.commit}`);
   if (t.note) out(`  note:   ${t.note}`);
 }
@@ -167,7 +194,7 @@ function printTask(t: BatchTask): void {
 function batchStart(rest: string[]): void {
   const task = store().start(requireId(rest[0]));
   out(`Started #${task.id}  ${task.title}`);
-  out(`  spec: ${task.path}`);
+  out(`  spec: ${notePath(task.slug)}`);
 }
 
 function batchDone(rest: string[]): void {
@@ -180,7 +207,10 @@ function batchDone(rest: string[]): void {
     status: "done",
     commit: values.commit,
   });
-  out(`Done #${task.id}  ${task.title}${task.commit ? `  → ${task.commit}` : ""}`);
+  out(
+    `Done #${task.id}  ${task.title}  (${formatSeconds(task.seconds)})` +
+      (task.commit ? `  → ${task.commit}` : ""),
+  );
 }
 
 function batchFail(rest: string[]): void {
@@ -240,17 +270,46 @@ function batchClear(): void {
     out("No batch to clear.");
     return;
   }
-  out("Batch cleared.");
+  out("Batch archived to extras/batch/history.");
 
   // The brainstorm folder is a queue, not an archive: a note whose design shipped
   // is spent, while anything not implemented stays queued for a future batch.
   for (const task of batch.tasks) {
-    const file = join(p.root, task.path);
-    if (task.status === "done" && existsSync(file)) {
+    const rel = notePath(task.slug);
+    const file = join(p.root, rel);
+    if (!existsSync(file)) continue;
+    if (task.status === "done") {
       rmSync(file);
-      out(`  deleted ${task.path} (implemented)`);
-    } else if (existsSync(file)) {
-      out(`  kept    ${task.path} (${task.status})`);
+      out(`  deleted ${rel} (implemented)`);
+    } else {
+      out(`  kept    ${rel} (${task.status})`);
     }
+  }
+}
+
+function batchHistory(rest: string[]): void {
+  const { values } = parseArgs({
+    args: rest,
+    options: { json: { type: "boolean" } },
+    allowPositionals: false,
+  });
+  const runs = store().history();
+
+  if (values.json) {
+    out(JSON.stringify(runs, null, 2));
+    return;
+  }
+  if (runs.length === 0) {
+    out("No finished runs yet. A batch is archived when you `workflow batch clear` it.");
+    return;
+  }
+  for (const run of runs) {
+    const total = run.tasks.reduce((sum, t) => sum + (t.seconds ?? 0), 0);
+    const shipped = run.tasks.filter((t) => t.status === "done").length;
+    out(
+      `\nRun ${iso(run.createdAt)} — ${run.status}, ` +
+        `${shipped}/${run.tasks.length} shipped in ${formatSeconds(total)}`,
+    );
+    printTasks(run);
   }
 }

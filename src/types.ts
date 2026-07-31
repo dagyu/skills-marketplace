@@ -16,29 +16,29 @@ export type BatchStatus = "active" | "stopped" | "completed";
 export interface BatchTask {
   /** Stable label, assigned at creation. Execution order is the array order. */
   id: number;
-  title: string;
-  /** Slug of the source brainstorm note. */
+  /** Slug of the source brainstorm note, which is the task's spec. */
   slug: string;
-  /** Project-relative path to the note, which is the task's spec. */
-  path: string;
+  /** The note's heading, kept so history stays readable after the note is gone. */
+  title: string;
   status: BatchTaskStatus;
+  /** Epoch seconds at which the task started. */
+  startedAt?: number;
+  /** How long the task took, in seconds. Recorded when it finishes. */
+  seconds?: number;
   /** Commit that implemented the task, recorded by `batch done --commit`. */
   commit?: string;
   /** Why the task failed, or how it was interrupted. */
   note?: string;
-  /** ISO timestamp. */
-  startedAt?: string;
-  /** ISO timestamp. */
-  finishedAt?: string;
 }
 
-/** On-disk shape of extras/batch/batch.json. At most one batch exists at a time. */
+/**
+ * One batch run. At most one is live at a time (in `extras/batch/batch`);
+ * finished runs are appended to `extras/batch/history`.
+ */
 export interface Batch {
   status: BatchStatus;
-  /** ISO timestamp. */
-  createdAt: string;
-  /** ISO timestamp. */
-  updatedAt: string;
+  /** Epoch seconds at creation. Doubles as the run's id in the history file. */
+  createdAt: number;
   tasks: BatchTask[];
 }
 
@@ -46,5 +46,4 @@ export interface Batch {
 export interface BatchTaskSpec {
   title: string;
   slug: string;
-  path: string;
 }

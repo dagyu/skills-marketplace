@@ -3,6 +3,7 @@ import { runBatch } from "./commands/batch.ts";
 import { runBrainstorm } from "./commands/brainstorm.ts";
 import { runInternals, runManifesto } from "./commands/docinfo.ts";
 import { runInit } from "./commands/init.ts";
+import { runServe } from "./commands/serve.ts";
 import { CliError, out } from "./lib/cli.ts";
 import { versionString } from "./version.ts";
 
@@ -14,6 +15,7 @@ Usage:
   workflow internals info       How to populate extras/internals/INTERNALS.md
   workflow brainstorm <cmd>     Manage brainstorm notes (new, list, delete)
   workflow batch <cmd>          Run a queue of brainstorms back to back (create, status, …)
+  workflow serve [--port <n>]   Preview and edit brainstorms, and watch a batch run, in a browser
 
 Options:
   -v, --version                 Print the version and build time
@@ -43,6 +45,9 @@ async function main(argv: string[]): Promise<number> {
         return 0;
       case "batch":
         runBatch(rest);
+        return 0;
+      case "serve":
+        await runServe(rest);
         return 0;
       case undefined:
       case "-h":

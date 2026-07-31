@@ -60,7 +60,9 @@ Brainstorm notes are managed through the `workflow` CLI. Key commands:
 | `workflow batch status` / `next` | See the batch, or the task to run next. |
 | `workflow batch start/done/fail <id>` | Move a task through the run. |
 | `workflow batch stop` / `resume` / `remove` / `revert` | The developer's controls over a running batch. |
-| `workflow batch clear` | Delete a finished batch (and the notes that shipped), freeing the slot. |
+| `workflow batch clear` | Archive a finished batch to the history (deleting the notes that shipped), freeing the slot. |
+| `workflow batch history` | Past runs: each task, how long it took, and its commit. |
+| `workflow serve` | Serve a local page to read/edit notes and watch a batch run. Offer it to the developer; do not run it as a background task of your own. |
 
 Run `workflow` with no arguments for full usage.
 

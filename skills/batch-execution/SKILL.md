@@ -30,7 +30,7 @@ anything else. While a batch is on disk the developer may only:
 
 A new batch is possible only once the current one is stopped or completed **and**
 cleared with `workflow batch clear`. Never work around this by hand-editing
-`extras/batch/batch.json`.
+`extras/batch/`.
 
 ## 1. Select
 
@@ -126,9 +126,25 @@ it and wait. Never skip ahead to the next task.
 ## 8. Finish
 
 When `workflow batch status` reads *completed*, summarise what shipped (task,
-commit, one line each), then run `workflow batch clear`. It deletes the batch and
-the brainstorm notes of the tasks that shipped, and keeps the notes of anything
-removed, failed, or reverted so they can be queued again later.
+commit, how long it took — one line each), then run `workflow batch clear`. That
+appends the run to `extras/batch/history` — the permanent record of which tasks
+ran, how long each took, and what each committed — deletes the brainstorm notes of
+the tasks that shipped, and keeps the notes of anything removed, failed, or
+reverted so they can be queued again later.
+
+`workflow batch history` reads past runs back. Use it when the developer asks what
+a previous batch did, rather than digging through the git log.
+
+## Watching the run
+
+The developer can follow the batch in a browser with `workflow serve` — it lists
+the notes (readable and editable) and shows the run live. Suggest it when you
+create the batch. Two things follow from it:
+
+- **Do not start it yourself** as a background process. It runs until stopped;
+  it's the developer's to launch and close.
+- A note can change under you between tasks. Always read a task's spec at the
+  moment you start it — never rely on what you read during the review.
 
 ## Handling the controls mid-run
 
@@ -150,5 +166,5 @@ removed, failed, or reverted so they can be queued again later.
   too big.
 - A subagent prompt that relies on context only you have — put it in the note.
 - Continuing past a failed task instead of stopping and reporting.
-- Creating a second batch, or hand-editing `extras/batch/batch.json`.
+- Creating a second batch, or hand-editing `extras/batch/`.
 - Marking a task done on the subagent's word, without running anything yourself.

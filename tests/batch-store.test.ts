@@ -9,7 +9,7 @@ let dir: string;
 let store: BatchStore;
 
 function spec(slug: string): BatchTaskSpec {
-  return { title: slug, slug, path: `extras/brainstorm/${slug}.md` };
+  return { title: slug, slug };
 }
 
 /** A three-task batch: #1 alpha, #2 beta, #3 gamma. */
@@ -19,7 +19,7 @@ function seed(): void {
 
 beforeEach(() => {
   dir = mkdtempSync(join(tmpdir(), "wf-batch-"));
-  store = new BatchStore(join(dir, "extras/batch/batch.json"));
+  store = new BatchStore(join(dir, "extras/batch/batch"), join(dir, "extras/batch/history"));
 });
 
 afterEach(() => {
@@ -77,6 +77,13 @@ describe("sequential execution", () => {
     expect(store.next()?.id).toBe(2);
   });
 
+  test("a task records how long it took", () => {
+    seed();
+    const started = store.start(1);
+    expect(started.startedAt).toBeGreaterThan(0);
+    expect(store.finish(1, { status: "done" }).seconds).toBeGreaterThanOrEqual(0);
+  });
+
   test("finishing a task that is not in progress is refused", () => {
     seed();
     expect(() => store.finish(1, { status: "done" })).toThrow(/not in progress/);
@@ -120,6 +127,7 @@ describe("developer controls", () => {
     expect(batch.status).toBe("stopped");
     expect(batch.tasks[0]!.status).toBe("pending");
     expect(batch.tasks[0]!.startedAt).toBeUndefined();
+    expect(batch.tasks[0]!.seconds).toBeUndefined();
     expect(batch.tasks[0]!.note).toContain("developer interrupted");
   });
 
@@ -157,7 +165,7 @@ describe("developer controls", () => {
   });
 });
 
-describe("clear", () => {
+describe("clear and history", () => {
   test("refuses while the batch is active", () => {
     seed();
     expect(() => store.clear()).toThrow(/still active/);
@@ -173,5 +181,33 @@ describe("clear", () => {
 
   test("clearing nothing is not an error", () => {
     expect(store.clear()).toBeUndefined();
+  });
+
+  test("history is empty until a run is cleared", () => {
+    expect(store.history()).toEqual([]);
+  });
+
+  test("each cleared run is appended, keeping its tasks, timings and commits", () => {
+    store.create([spec("alpha")]);
+    store.start(1);
+    store.finish(1, { status: "done", commit: "abc1234" });
+    store.clear();
+
+    store.create([spec("beta")]);
+    store.start(1);
+    store.finish(1, { status: "failed", note: "boom" });
+    store.clear();
+
+    const runs = store.history();
+    expect(runs).toHaveLength(2);
+    expect(runs[0]!.status).toBe("completed");
+    expect(runs[0]!.tasks[0]).toMatchObject({
+      slug: "alpha",
+      status: "done",
+      commit: "abc1234",
+    });
+    expect(runs[0]!.tasks[0]!.seconds).toBeGreaterThanOrEqual(0);
+    expect(runs[1]!.status).toBe("stopped");
+    expect(runs[1]!.tasks[0]).toMatchObject({ slug: "beta", status: "failed", note: "boom" });
   });
 });

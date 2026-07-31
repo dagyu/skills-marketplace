@@ -32,8 +32,10 @@ safer first) and gets one approval for the whole batch, which explicitly covers
 each task's commit. Execution is strictly sequential: `batch next` → `batch start`
 → one subagent → verify → commit → `batch done --commit <sha>`. A failure calls
 `batch fail`, which stops the batch. Mid-run the developer can stop, resume,
-revert a finished task, or remove queued ones; a finished batch is wrapped up with
-`batch clear`.
+revert a finished task, or remove queued ones — and watch the whole thing in the
+browser via `workflow serve`, which the agent suggests but never starts itself. A
+finished batch is wrapped up with `batch clear`, which archives it to
+`extras/batch/history`.
 
 ## internals
 

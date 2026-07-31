@@ -1,32 +1,41 @@
-import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { appendFileSync, existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { dirname } from "node:path";
+import { decodeBatch, decodeBatches, encodeBatch } from "./batch-format.ts";
 import { CliError } from "./cli.ts";
 import type { Batch, BatchTask, BatchTaskSpec, BatchTaskStatus } from "../types.ts";
 
 /** Statuses a task can no longer move out of. */
 const TERMINAL: BatchTaskStatus[] = ["done", "failed", "reverted"];
 
+/** Epoch seconds — the unit every time in a batch is recorded in. */
+function now(): number {
+  return Math.floor(Date.now() / 1000);
+}
+
 /**
- * The only module that reads or writes extras/batch/batch.json.
+ * The only module that reads or writes extras/batch/ — the live batch and the
+ * run history. Both are in the line-oriented format from batch-format.ts.
  *
- * It enforces the rules that make a batch safe to run unattended:
- * at most one batch exists at a time, tasks start strictly in order, and only
- * one task is in progress at any moment.
+ * It enforces the rules that make a batch safe to run unattended: at most one
+ * batch exists at a time, tasks start strictly in order, and only one task is in
+ * progress at any moment.
  *
- * Constructed with the absolute path to batch.json so it is trivially testable
- * against a temp directory.
+ * Constructed with the two absolute paths so it is trivially testable against a
+ * temp directory.
  */
 export class BatchStore {
   private readonly file: string;
+  private readonly historyFile: string;
 
-  constructor(file: string) {
+  constructor(file: string, historyFile: string) {
     this.file = file;
+    this.historyFile = historyFile;
   }
 
   /** The current batch, or undefined when none exists. */
   read(): Batch | undefined {
     if (!existsSync(this.file)) return undefined;
-    return JSON.parse(readFileSync(this.file, "utf8")) as Batch;
+    return decodeBatch(readFileSync(this.file, "utf8"));
   }
 
   /** The current batch, or a CliError explaining that there is none. */
@@ -38,13 +47,18 @@ export class BatchStore {
     return batch;
   }
 
+  /** Every finished run, oldest first. */
+  history(): Batch[] {
+    if (!existsSync(this.historyFile)) return [];
+    return decodeBatches(readFileSync(this.historyFile, "utf8"));
+  }
+
   private write(batch: Batch): Batch {
-    batch.updatedAt = new Date().toISOString();
     if (batch.status === "active" && !batch.tasks.some((t) => !isTerminal(t))) {
       batch.status = "completed";
     }
     mkdirSync(dirname(this.file), { recursive: true });
-    writeFileSync(this.file, JSON.stringify(batch, null, 2) + "\n", "utf8");
+    writeFileSync(this.file, encodeBatch(batch), "utf8");
     return batch;
   }
 
@@ -64,22 +78,22 @@ export class BatchStore {
           : `A batch is already ${existing.status}. Stop it and run \`workflow batch clear\` before creating another.`,
       );
     }
-    const now = new Date().toISOString();
     return this.write({
       status: "active",
-      createdAt: now,
-      updatedAt: now,
+      createdAt: now(),
       tasks: specs.map((spec, index) => ({
         id: index + 1,
-        title: spec.title,
         slug: spec.slug,
-        path: spec.path,
+        title: spec.title,
         status: "pending",
       })),
     });
   }
 
-  /** Delete the batch file. Returns the removed batch, or undefined if none. */
+  /**
+   * Append the batch to the history and delete the live file. Returns the
+   * archived batch, or undefined if there was none.
+   */
   clear(): Batch | undefined {
     const batch = this.read();
     if (!batch) return undefined;
@@ -88,6 +102,8 @@ export class BatchStore {
         "The batch is still active. Run `workflow batch stop` first, then clear it.",
       );
     }
+    mkdirSync(dirname(this.historyFile), { recursive: true });
+    appendFileSync(this.historyFile, encodeBatch(batch), "utf8");
     rmSync(this.file);
     return batch;
   }
@@ -132,7 +148,8 @@ export class BatchStore {
       );
     }
     task.status = "in-progress";
-    task.startedAt = new Date().toISOString();
+    task.startedAt = now();
+    delete task.seconds;
     delete task.note;
     this.write(batch);
     return task;
@@ -149,7 +166,7 @@ export class BatchStore {
       throw new CliError(`Task #${id} is ${task.status}, not in progress.`);
     }
     task.status = result.status;
-    task.finishedAt = new Date().toISOString();
+    task.seconds = Math.max(0, now() - (task.startedAt ?? now()));
     if (result.commit) task.commit = result.commit;
     if (result.note) task.note = result.note;
     if (result.status === "failed" && batch.status === "active") {
@@ -222,7 +239,6 @@ export class BatchStore {
       throw new CliError(`Only done tasks can be reverted; #${id} is ${task.status}.`);
     }
     task.status = "reverted";
-    task.finishedAt = new Date().toISOString();
     this.write(batch);
     return task;
   }

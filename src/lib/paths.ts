@@ -11,7 +11,10 @@ export interface ProjectPaths {
   extrasDir: string;
   brainstormDir: string;
   batchDir: string;
+  /** The live batch, if one exists. */
   batchFile: string;
+  /** Finished batch runs, appended one block per run. */
+  historyFile: string;
   manifestoDir: string;
   manifestoFile: string;
   internalsDir: string;
@@ -19,6 +22,11 @@ export interface ProjectPaths {
   docsDir: string;
   readmeFile: string;
   claudeFile: string;
+}
+
+/** Project-relative path of the brainstorm note a slug names. */
+export function notePath(slug: string): string {
+  return `extras/brainstorm/${slug}.md`;
 }
 
 export function resolveProjectPaths(root: string = process.cwd()): ProjectPaths {
@@ -31,7 +39,8 @@ export function resolveProjectPaths(root: string = process.cwd()): ProjectPaths 
     extrasDir,
     brainstormDir: join(extrasDir, "brainstorm"),
     batchDir,
-    batchFile: join(batchDir, "batch.json"),
+    batchFile: join(batchDir, "batch"),
+    historyFile: join(batchDir, "history"),
     manifestoDir,
     manifestoFile: join(manifestoDir, "MANIFESTO.md"),
     internalsDir,
