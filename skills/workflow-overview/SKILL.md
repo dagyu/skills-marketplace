@@ -24,8 +24,10 @@ will help, and skip it when the change is small and well understood.
 
 **Several brainstorms to build at once?** Run them as a batch (use the
 **batch-execution** skill): the notes are reviewed and ordered, the developer
-approves once, and each task is then implemented by its own subagent, one after
-another. At most one batch runs at a time.
+approves once, and each task is then implemented by its own, freshly spawned
+subagent, one after another — the main agent only orchestrates, verifies, and
+commits; it never implements a batch task itself. At most one batch runs at a
+time.
 
 ## Prime directive
 

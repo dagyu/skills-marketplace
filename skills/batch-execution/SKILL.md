@@ -32,6 +32,18 @@ A new batch is possible only once the current one is stopped or completed **and*
 cleared with `workflow batch clear`. Never work around this by hand-editing
 `extras/batch/`.
 
+## The one-subagent-per-task rule
+
+**Every task in a batch is implemented by its own, freshly spawned subagent.**
+You — the main agent — orchestrate: you pick the next task, spawn its subagent,
+verify the result, commit, and record it. You never write a task's code yourself,
+and you never hand a second task to a subagent that already ran one. One task, one
+new subagent, one commit — then the next.
+
+This is what keeps a long batch reliable: each implementation starts from a clean
+context holding only its note, so earlier tasks cannot leak assumptions into later
+ones, and your own context stays small enough to orchestrate the whole run.
+
 ## 1. Select
 
 Run `workflow brainstorm list` and have the developer pick the notes. Echo the
@@ -109,7 +121,8 @@ Loop until `workflow batch next` reports nothing to run:
 
 1. `workflow batch next` — gives the task id and its spec path.
 2. `workflow batch start <id>`.
-3. **Spawn one subagent** for that task, and only that task. Its prompt must
+3. **Spawn a new subagent** for that task, and only that task — never implement
+   it yourself, never reuse the previous task's subagent. Its prompt must
    stand alone: read the spec at `<path>` — **and nothing else by default; the
    spec already carries the manifesto and internals context, so do not open
    `MANIFESTO.md` or `INTERNALS.md`** — implement the design, verify it works,
@@ -177,6 +190,10 @@ create the batch. Two things follow from it:
 
 ## Red flags — STOP
 
+- Implementing a batch task yourself, in the main context, instead of spawning a
+  subagent for it.
+- Giving one subagent more than one task, or continuing a previous task's
+  subagent for the next one.
 - Two subagents running at once, or starting a task before the previous one is
   committed.
 - A note entering the batch with open questions, or one you privately think is

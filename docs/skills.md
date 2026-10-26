@@ -36,7 +36,9 @@ note**, because the subagent that implements it sees only the note. The agent th
 chooses the order (dependencies first, foundations before consumers, smaller and
 safer first) and gets one approval for the whole batch, which explicitly covers
 each task's commit. Execution is strictly sequential: `batch next` → `batch start`
-→ one subagent → verify → commit → `batch done --commit <sha>`. Each subagent
+→ a new subagent → verify → commit → `batch done --commit <sha>`. Every task gets
+its own freshly spawned subagent; the main agent only orchestrates, verifies and
+commits, and never implements a task itself. Each subagent
 updates only the doc pages for the surface it changed and never edits
 `INTERNALS.md`; it reports structural changes instead, and the map is updated once
 for the whole run at the end. A failure calls
