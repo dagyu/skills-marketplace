@@ -138,6 +138,24 @@ describe("developer controls", () => {
     expect(() => store.resume()).toThrow(/No pending tasks/);
   });
 
+  test("add inserts before a pending task with a fresh id", () => {
+    seed();
+    store.start(1);
+    const [added] = store.add([spec("zeta")], 2);
+    expect(added!.id).toBe(4);
+    expect(store.read()!.tasks.map((t) => t.id)).toEqual([1, 4, 2, 3]);
+    expect(store.next()!.id).toBe(4);
+  });
+
+  test("add appends by default and refuses duplicates or started targets", () => {
+    seed();
+    store.add([spec("zeta")]);
+    expect(store.read()!.tasks.map((t) => t.id)).toEqual([1, 2, 3, 4]);
+    expect(() => store.add([spec("zeta")])).toThrow(/already in the batch/);
+    store.start(1);
+    expect(() => store.add([spec("eta")], 1)).toThrow(/pending task/);
+  });
+
   test("remove drops pending tasks and keeps the remaining ids stable", () => {
     seed();
     store.remove([2]);

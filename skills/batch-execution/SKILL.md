@@ -26,6 +26,7 @@ anything else. While a batch is on disk the developer may only:
 
 - **stop** it (`workflow batch stop`),
 - **revert** a finished task (`workflow batch revert <id>`),
+- **add** notes to the queue (`workflow batch add <name…> [--before <id>]`),
 - **remove** queued tasks (`workflow batch remove <id…>`).
 
 A new batch is possible only once the current one is stopped or completed **and**

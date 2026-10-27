@@ -17,6 +17,7 @@ const USAGE = `Usage:
   workflow batch fail <id> --reason <why>  Mark a task failed; stops the batch
   workflow batch stop [--reason <why>]     Halt execution (an in-progress task returns to pending)
   workflow batch resume                    Resume a stopped batch
+  workflow batch add <name…> [--before <id>]  Queue more notes, at the end or before a pending task
   workflow batch remove <id…>              Drop not-yet-started tasks from the queue
   workflow batch revert <id>               Mark a done task reverted; prints the git command to undo it
   workflow batch clear                     Archive the batch to the history, freeing the slot
@@ -46,6 +47,8 @@ export function runBatch(args: string[]): void {
       return batchStop(rest);
     case "resume":
       return batchResume();
+    case "add":
+      return batchAdd(rest);
     case "remove":
       return batchRemove(rest);
     case "revert":
@@ -244,6 +247,29 @@ function batchResume(): void {
   out("Batch resumed.");
   const next = batch.tasks.find((t) => t.status === "pending");
   if (next) out(`Next: #${next.id}  ${next.title}`);
+}
+
+function batchAdd(rest: string[]): void {
+  const { values, positionals } = parseArgs({
+    args: rest,
+    options: { before: { type: "string" } },
+    allowPositionals: true,
+  });
+  const names = positionals.map((s) => s.trim()).filter((s) => s.length > 0);
+  if (names.length === 0) {
+    throw new CliError("At least one brainstorm note is required: workflow batch add <name…>");
+  }
+  const specs = names.map(resolveNote);
+  const seen = new Set<string>();
+  for (const spec of specs) {
+    if (seen.has(spec.slug)) throw new CliError(`"${spec.slug}" is listed twice.`);
+    seen.add(spec.slug);
+  }
+  const before = values.before === undefined ? undefined : requireId(values.before);
+  const st = store();
+  st.add(specs, before);
+  out("Batch is now:");
+  printTasks(st.require());
 }
 
 function batchRemove(rest: string[]): void {

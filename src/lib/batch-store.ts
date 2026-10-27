@@ -211,6 +211,39 @@ export class BatchStore {
     return this.write(batch);
   }
 
+  /**
+   * Queue more notes as pending tasks: before the pending task `beforeId`, or at
+   * the end. Ids stay stable — new tasks take fresh ids, and execution order is
+   * the array order, so an inserted task runs where it was placed.
+   */
+  add(specs: BatchTaskSpec[], beforeId?: number): BatchTask[] {
+    const batch = this.require();
+    if (batch.status === "completed") {
+      throw new CliError("The batch is completed. Clear it and create a new one.");
+    }
+    const dup = specs.find((s) => batch.tasks.some((t) => t.slug === s.slug && t.status !== "reverted"));
+    if (dup) throw new CliError(`"${dup.slug}" is already in the batch.`);
+
+    let index = batch.tasks.length;
+    if (beforeId !== undefined) {
+      const target = find(batch, beforeId);
+      if (target.status !== "pending") {
+        throw new CliError(`Can only insert before a pending task; #${beforeId} is ${target.status}.`);
+      }
+      index = batch.tasks.indexOf(target);
+    }
+    let nextId = batch.tasks.reduce((max, t) => Math.max(max, t.id), 0) + 1;
+    const added: BatchTask[] = specs.map((spec) => ({
+      id: nextId++,
+      slug: spec.slug,
+      title: spec.title,
+      status: "pending",
+    }));
+    batch.tasks.splice(index, 0, ...added);
+    this.write(batch);
+    return added;
+  }
+
   /** Drop not-yet-started tasks from the queue. */
   remove(ids: number[]): BatchTask[] {
     const batch = this.require();

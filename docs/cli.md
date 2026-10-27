@@ -69,6 +69,7 @@ then cleared. This is what stops a second run being queued on top of a live one.
 | `workflow batch fail <id> --reason <why>` | Close it as failed and stop the batch. `--reason` is required. |
 | `workflow batch stop [--reason <why>]` | Halt execution. An in-progress task returns to `pending` (with a note) so a resumed batch re-runs it from a known state. |
 | `workflow batch resume` | Return a stopped batch to `active`. Failed tasks stay failed; the run picks up at the next pending task. |
+| `workflow batch add "<name>" … [--before <id>]` | Queue more notes as pending tasks, at the end or just before a pending task. New tasks get fresh ids (existing ids never shift); refuses a note already in the batch, or a completed batch. |
 | `workflow batch remove <id…>` | Drop queued tasks. Only `pending` tasks can be removed; the remaining ids do not shift. Their brainstorm notes are left alone. |
 | `workflow batch revert <id>` | Mark a `done` task reverted and print `git revert --no-edit <sha>` for it. The CLI never runs git itself — it records state and tells you the command. |
 | `workflow batch clear` | Archive the batch to the history and delete the live file, freeing the slot. Refuses while the batch is `active` (stop it first). Deletes the brainstorm notes of tasks that shipped and keeps the rest. |
