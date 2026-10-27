@@ -6,124 +6,225 @@
 <title>workflow preview</title>
 <style>
   :root {
-    --bg: #fbfbfa; --panel: #fff; --line: #e4e2dd; --ink: #1c1b19; --dim: #706c64;
-    --accent: #2f6f4f; --warn: #9a6b00; --bad: #a03127; --shadow: 0 1px 2px rgba(0,0,0,.05);
+    --bg: #f6f5f2; --panel: #fff; --line: #e4e2dd; --ink: #1c1b19; --dim: #706c64;
+    --accent: #2f6f4f; --warn: #9a6b00; --bad: #a03127; --soft: color-mix(in srgb, var(--ink) 5%, transparent);
   }
   @media (prefers-color-scheme: dark) {
     :root {
-      --bg: #17181a; --panel: #1e2023; --line: #2f3236; --ink: #e8e6e3; --dim: #9a958c;
-      --accent: #7cc39a; --warn: #d8a43c; --bad: #e0806f; --shadow: none;
+      --bg: #131416; --panel: #1c1e21; --line: #2d3034; --ink: #e8e6e3; --dim: #9a958c;
+      --accent: #7cc39a; --warn: #d8a43c; --bad: #e0806f;
     }
   }
   * { box-sizing: border-box; }
+  html, body { height: 100%; }
   body {
-    margin: 0; background: var(--bg); color: var(--ink);
-    font: 15px/1.6 ui-sans-serif, -apple-system, "Segoe UI", Roboto, sans-serif;
+    margin: 0; background: var(--bg); color: var(--ink); display: flex; flex-direction: column;
+    font: 14px/1.55 ui-sans-serif, -apple-system, "Segoe UI", Roboto, sans-serif;
   }
+  button { font: inherit; color: inherit; }
+  .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+  .dim { color: var(--dim); }
+
+  /* ---- top bar ---- */
   header {
-    display: flex; align-items: baseline; gap: 10px; padding: 12px 20px;
-    border-bottom: 1px solid var(--line); background: var(--panel); position: sticky; top: 0; z-index: 2;
+    display: flex; align-items: center; gap: 18px; padding: 0 20px; height: 48px; flex: none;
+    background: var(--panel); border-bottom: 1px solid var(--line);
   }
-  header b { font-size: 15px; letter-spacing: .02em; }
-  header .root { color: var(--dim); font-size: 13px; font-family: ui-monospace, monospace; }
-  header .live { margin-left: auto; color: var(--dim); font-size: 12px; }
-  main { display: grid; grid-template-columns: 300px 1fr; align-items: start; gap: 20px; padding: 20px; max-width: 1200px; }
-  @media (max-width: 800px) { main { grid-template-columns: 1fr; } }
-  .card { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; box-shadow: var(--shadow); }
-  aside { display: flex; flex-direction: column; gap: 16px; }
-  h2 { font-size: 12px; text-transform: uppercase; letter-spacing: .08em; color: var(--dim); margin: 0; padding: 12px 14px 0; }
-  ul { list-style: none; margin: 0; padding: 8px; display: flex; flex-direction: column; gap: 2px; }
-  li button {
-    width: 100%; text-align: left; background: none; border: 0; border-radius: 6px; padding: 7px 8px;
-    color: inherit; font: inherit; cursor: pointer; display: flex; align-items: center; gap: 8px;
+  header .brand { font-weight: 650; letter-spacing: .01em; }
+  header .root { color: var(--dim); font-size: 12px; }
+  nav { display: flex; gap: 2px; height: 100%; margin-left: 8px; }
+  nav button {
+    background: none; border: 0; padding: 0 14px; cursor: pointer; color: var(--dim);
+    border-bottom: 2px solid transparent; display: flex; align-items: center; gap: 7px;
   }
-  li button:hover { background: color-mix(in srgb, var(--ink) 6%, transparent); }
-  li button[aria-current="true"] { background: color-mix(in srgb, var(--accent) 16%, transparent); }
-  li .slug { color: var(--dim); font-size: 11px; font-family: ui-monospace, monospace; }
-  .empty { padding: 10px 14px 14px; color: var(--dim); font-size: 13px; }
+  nav button:hover { color: var(--ink); }
+  nav button[aria-selected="true"] { color: var(--ink); border-bottom-color: var(--accent); font-weight: 550; }
+  .count {
+    font-size: 11px; padding: 0 7px; border-radius: 999px; background: var(--soft); color: var(--dim); line-height: 18px;
+  }
+  .count.live { background: color-mix(in srgb, var(--warn) 20%, transparent); color: var(--warn); }
+  .conn { margin-left: auto; font-size: 12px; color: var(--dim); display: flex; align-items: center; gap: 6px; }
+  .conn i { width: 7px; height: 7px; border-radius: 50%; background: var(--accent); }
+  .conn.off i { background: var(--bad); }
+
+  /* ---- pages ---- */
+  .page { flex: 1; min-height: 0; display: none; }
+  .page.on { display: block; }
+  #p-tasks.on { display: grid; grid-template-columns: 340px 1fr; }
+  .scroll { overflow-y: auto; height: 100%; }
+  @media (max-width: 800px) {
+    #p-tasks.on { grid-template-columns: 1fr; grid-template-rows: minmax(0, 38%) minmax(0, 1fr); }
+    header { gap: 10px; padding: 0 10px; } header .root { display: none; }
+  }
+
+  /* ---- pills & status ---- */
   .pill {
-    font-size: 10px; text-transform: uppercase; letter-spacing: .06em; padding: 2px 6px;
-    border-radius: 999px; border: 1px solid currentColor; white-space: nowrap;
+    font-size: 10px; text-transform: uppercase; letter-spacing: .06em; padding: 1px 7px; line-height: 17px;
+    border-radius: 999px; border: 1px solid currentColor; white-space: nowrap; flex: none; font-weight: 600;
   }
-  .s-pending, .s-brainstorm { color: var(--dim); }
-  .s-ready { color: var(--accent); }
-  .s-running { color: var(--warn); }
-  .s-done { color: var(--accent); }
+  .s-pending, .s-brainstorm, .s-reverted { color: var(--dim); }
+  .s-ready, .s-done, .s-active, .s-completed { color: var(--accent); }
+  .s-running, .s-stopped { color: var(--warn); }
   .s-failed { color: var(--bad); }
-  .s-reverted { color: var(--dim); text-decoration: line-through; }
-  .task { display: grid; grid-template-columns: 20px 1fr auto; gap: 8px; align-items: baseline; padding: 6px 14px; }
-  .task .id { color: var(--dim); font-size: 11px; font-family: ui-monospace, monospace; }
-  .task .meta { color: var(--dim); font-size: 11px; font-family: ui-monospace, monospace; }
-  .task .why { grid-column: 2 / -1; color: var(--bad); font-size: 12px; }
-  .bar { padding: 10px 14px; border-bottom: 1px solid var(--line); display: flex; align-items: center; gap: 10px; }
+  .s-reverted { text-decoration: line-through; }
+
+  /* ---- tasks: list pane ---- */
+  .list { background: var(--panel); border-right: 1px solid var(--line); display: flex; flex-direction: column; min-height: 0; }
+  .tools { padding: 12px; border-bottom: 1px solid var(--line); display: flex; flex-direction: column; gap: 10px; }
+  .tools input {
+    width: 100%; font: inherit; padding: 7px 10px; border-radius: 7px; background: var(--bg); color: inherit;
+    border: 1px solid var(--line);
+  }
+  .tools input:focus { outline: 2px solid color-mix(in srgb, var(--accent) 45%, transparent); border-color: transparent; }
+  .chips { display: flex; gap: 6px; flex-wrap: wrap; }
+  .chip {
+    background: none; border: 1px solid var(--line); border-radius: 999px; padding: 2px 10px; cursor: pointer;
+    font-size: 12px; color: var(--dim);
+  }
+  .chip:hover { border-color: var(--dim); }
+  .chip[aria-pressed="true"] { background: var(--ink); color: var(--panel); border-color: var(--ink); }
+  .items { flex: 1; overflow-y: auto; padding: 6px; }
+  .item {
+    width: 100%; text-align: left; background: none; border: 0; border-radius: 8px; padding: 9px 10px;
+    cursor: pointer; display: block; border-left: 3px solid transparent;
+  }
+  .item:hover { background: var(--soft); }
+  .item[aria-current="true"] { background: color-mix(in srgb, var(--accent) 13%, transparent); border-left-color: var(--accent); }
+  .item .top { display: flex; align-items: flex-start; gap: 8px; }
+  .item .title { flex: 1; min-width: 0; font-weight: 550; line-height: 1.35; }
+  .item .slug { font-size: 11px; color: var(--dim); margin-top: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .empty { padding: 28px 18px; text-align: center; color: var(--dim); }
+  .empty code { background: var(--soft); padding: 2px 6px; border-radius: 4px; }
+
+  /* ---- tasks: reader pane ---- */
+  .reader { display: flex; flex-direction: column; min-height: 0; min-width: 0; }
+  .bar {
+    flex: none; padding: 10px 28px; background: var(--panel); border-bottom: 1px solid var(--line);
+    display: flex; align-items: center; gap: 10px;
+  }
+  .bar .name { font-weight: 650; font-size: 15px; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .grow { flex: 1; min-width: 0; }
-  button.act {
-    font: inherit; font-size: 13px; padding: 5px 12px; border-radius: 6px; cursor: pointer;
-    border: 1px solid var(--line); background: var(--bg); color: inherit;
+  .act {
+    font-size: 13px; padding: 5px 14px; border-radius: 7px; cursor: pointer; border: 1px solid var(--line); background: var(--panel);
   }
-  button.act:hover { border-color: var(--dim); }
-  button.act.primary { background: var(--accent); border-color: var(--accent); color: var(--panel); }
-  button.act:disabled { opacity: .5; cursor: not-allowed; }
-  .doc { padding: 4px 22px 22px; overflow-wrap: anywhere; }
-  .doc h1 { font-size: 22px; margin: 18px 0 8px; }
-  .doc h2 { font-size: 15px; text-transform: none; letter-spacing: 0; color: var(--ink); padding: 0; margin: 20px 0 6px; }
-  .doc h3 { font-size: 14px; margin: 16px 0 4px; }
-  .doc ul, .doc ol { padding-left: 20px; list-style: disc; display: block; }
-  .doc ol { list-style: decimal; }
-  .doc li { display: list-item; margin: 2px 0; }
-  .doc code { font-family: ui-monospace, monospace; font-size: .88em; background: color-mix(in srgb, var(--ink) 7%, transparent); padding: 1px 4px; border-radius: 4px; }
-  .doc pre { background: color-mix(in srgb, var(--ink) 6%, transparent); padding: 10px 12px; border-radius: 6px; overflow-x: auto; }
+  .act:hover { border-color: var(--dim); }
+  .act.primary { background: var(--accent); border-color: var(--accent); color: var(--panel); font-weight: 550; }
+  .act:disabled { opacity: .5; cursor: not-allowed; }
+  .banner { flex: none; padding: 9px 28px; font-size: 13px; color: var(--warn); background: color-mix(in srgb, var(--warn) 10%, transparent); border-bottom: 1px solid var(--line); }
+  .paper { flex: 1; overflow-y: auto; padding: 28px; }
+  .doc { max-width: 74ch; margin: 0 auto; overflow-wrap: anywhere; font-size: 15px; line-height: 1.7; }
+  .doc h1 { font-size: 26px; line-height: 1.25; margin: 0 0 6px; letter-spacing: -.01em; }
+  .doc h2 {
+    font-size: 12px; text-transform: uppercase; letter-spacing: .08em; color: var(--dim);
+    margin: 30px 0 8px; padding-top: 18px; border-top: 1px solid var(--line);
+  }
+  .doc h3 { font-size: 15px; margin: 20px 0 4px; }
+  .doc p { margin: 8px 0; }
+  .doc ul, .doc ol { padding-left: 22px; margin: 8px 0; }
+  .doc li { margin: 3px 0; }
+  .doc code { font-family: ui-monospace, monospace; font-size: .88em; background: var(--soft); padding: 1px 5px; border-radius: 4px; }
+  .doc pre { background: var(--soft); padding: 12px 14px; border-radius: 8px; overflow-x: auto; }
   .doc pre code { background: none; padding: 0; }
-  .doc hr { border: 0; border-top: 1px solid var(--line); margin: 18px 0; }
-  .doc blockquote { margin: 8px 0; padding-left: 12px; border-left: 2px solid var(--line); color: var(--dim); }
+  .doc hr { border: 0; border-top: 1px solid var(--line); margin: 20px 0; }
+  .doc blockquote { margin: 10px 0; padding-left: 14px; border-left: 3px solid var(--line); color: var(--dim); }
+  .doc a { color: var(--accent); }
   textarea {
-    width: 100%; min-height: 60vh; border: 0; border-radius: 0 0 8px 8px; padding: 16px 22px; resize: vertical;
-    background: none; color: inherit; font: 13px/1.7 ui-monospace, SFMono-Regular, Menlo, monospace;
+    display: block; width: 100%; max-width: 100ch; height: 100%; min-height: 50vh; margin: 0 auto; border: 1px solid var(--line);
+    border-radius: 8px; padding: 16px 18px; resize: none; background: var(--panel); color: inherit;
+    font: 13px/1.7 ui-monospace, SFMono-Regular, Menlo, monospace;
   }
-  textarea:focus { outline: none; }
-  .note { padding: 10px 14px; font-size: 13px; color: var(--warn); border-top: 1px solid var(--line); }
-  .placeholder { padding: 60px 22px; text-align: center; color: var(--dim); }
-  .run { border-top: 1px solid var(--line); padding: 10px 0 6px; }
-  .run:first-child { border-top: 0; }
-  .run .head { padding: 0 14px 4px; font-size: 12px; color: var(--dim); font-family: ui-monospace, monospace; }
+  textarea:focus { outline: 2px solid color-mix(in srgb, var(--accent) 45%, transparent); border-color: transparent; }
+  .placeholder { margin: auto; padding: 40px; text-align: center; color: var(--dim); }
+
+  /* ---- batch & history ---- */
+  .wrap { max-width: 860px; margin: 0 auto; padding: 24px 20px 48px; }
+  .card { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; }
+  .summary { padding: 18px 20px; display: flex; flex-direction: column; gap: 14px; }
+  .summary .row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+  .summary h1 { font-size: 18px; margin: 0; }
+  .stats { display: flex; gap: 28px; flex-wrap: wrap; }
+  .stat .v { font-size: 20px; font-weight: 650; font-variant-numeric: tabular-nums; }
+  .stat .k { font-size: 11px; text-transform: uppercase; letter-spacing: .07em; color: var(--dim); }
+  .seg { display: flex; gap: 3px; height: 8px; }
+  .seg i { flex: 1; border-radius: 4px; background: var(--line); }
+  .seg i.done { background: var(--accent); }
+  .seg i.running { background: var(--warn); animation: pulse 1.4s ease-in-out infinite; }
+  .seg i.failed { background: var(--bad); }
+  .seg i.reverted { background: var(--dim); opacity: .5; }
+  @keyframes pulse { 50% { opacity: .45; } }
+  .steps { margin: 18px 0 0; padding: 0; list-style: none; }
+  .step { display: grid; grid-template-columns: 28px 1fr auto; gap: 4px 12px; padding: 12px 18px; position: relative; }
+  .step + .step { border-top: 1px solid var(--line); }
+  .step .n {
+    width: 24px; height: 24px; border-radius: 50%; border: 1.5px solid currentColor; display: grid; place-items: center;
+    font-size: 11px; font-weight: 650; margin-top: 1px;
+  }
+  .step .t { font-weight: 550; line-height: 1.4; }
+  .step .t button { background: none; border: 0; padding: 0; cursor: pointer; text-align: left; font-weight: 550; }
+  .step .t button:hover { text-decoration: underline; }
+  .step .m { grid-column: 2 / -1; font-size: 12px; color: var(--dim); display: flex; gap: 14px; flex-wrap: wrap; }
+  .step .why { grid-column: 2 / -1; font-size: 13px; color: var(--bad); }
+  .step.now { background: color-mix(in srgb, var(--warn) 8%, transparent); }
+  h2.sec { font-size: 12px; text-transform: uppercase; letter-spacing: .08em; color: var(--dim); margin: 26px 2px 10px; }
+  details.run { margin-bottom: 10px; }
+  details.run summary {
+    list-style: none; cursor: pointer; padding: 13px 18px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+  }
+  details.run summary::-webkit-details-marker { display: none; }
+  details.run summary::before { content: "▸"; color: var(--dim); transition: transform .12s; }
+  details.run[open] summary::before { transform: rotate(90deg); }
+  details.run .when { font-weight: 550; }
+  details.run .sum { margin-left: auto; color: var(--dim); font-size: 12px; }
+  details.run .steps { margin: 0; border-top: 1px solid var(--line); }
+  .big-empty { text-align: center; padding: 70px 20px; color: var(--dim); }
+  .big-empty b { display: block; color: var(--ink); font-size: 16px; margin-bottom: 6px; }
+  .big-empty code { background: var(--soft); padding: 2px 6px; border-radius: 4px; }
 </style>
 </head>
 <body>
 <header>
-  <b>workflow</b>
-  <span class="root" id="root"></span>
-  <span class="live" id="live">connecting…</span>
+  <span class="brand">workflow</span>
+  <span class="root mono" id="root"></span>
+  <nav role="tablist">
+    <button role="tab" data-tab="tasks">Tasks <span class="count" id="c-tasks"></span></button>
+    <button role="tab" data-tab="batch">Batch <span class="count" id="c-batch"></span></button>
+    <button role="tab" data-tab="history">History <span class="count" id="c-history"></span></button>
+  </nav>
+  <span class="conn" id="conn"><i></i><span>connecting…</span></span>
 </header>
-<main>
-  <aside>
-    <div class="card" id="batch"></div>
-    <div class="card">
-      <h2>Tasks</h2>
-      <ul id="notes"></ul>
+
+<section class="page" id="p-tasks">
+  <div class="list">
+    <div class="tools">
+      <input id="q" type="search" placeholder="Search tasks…" autocomplete="off">
+      <div class="chips" id="chips"></div>
     </div>
-    <div class="card" id="history"></div>
-  </aside>
-  <section class="card" id="view">
-    <div class="placeholder">Pick a task to read or edit it.</div>
-  </section>
-</main>
+    <div class="items" id="items"></div>
+  </div>
+  <div class="reader" id="reader"></div>
+</section>
+<section class="page" id="p-batch"><div class="scroll"><div class="wrap" id="batch"></div></div></section>
+<section class="page" id="p-history"><div class="scroll"><div class="wrap" id="history"></div></div></section>
+
 <script>
 "use strict";
 const $ = (id) => document.getElementById(id);
 let state = null;      // last /api/state payload
+let tab = null;        // "tasks" | "batch" | "history"
+let filter = "all";    // task list filter
+let query = "";
 let selected = null;   // slug being viewed
-let note = null;       // { slug, title, content, locked }
+let note = null;       // { slug, title, status, content, locked }
 let editing = false;
 let dirty = "";        // in-progress edit buffer, so a poll never clobbers typing
 let saving = false;
 
-const STATUS_CLASS = {
-  pending: "s-pending", "in-progress": "s-running", done: "s-done",
-  failed: "s-failed", reverted: "s-reverted",
+const RUN_CLASS = {
+  pending: "s-pending", "in-progress": "s-running", done: "s-done", failed: "s-failed", reverted: "s-reverted",
 };
 
 function esc(s) {
-  return s.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+  return String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 }
 
 function secs(n) {
@@ -132,6 +233,14 @@ function secs(n) {
   const m = Math.floor(n / 60);
   if (m < 60) return m + "m " + String(n % 60).padStart(2, "0") + "s";
   return Math.floor(m / 60) + "h " + String(m % 60).padStart(2, "0") + "m";
+}
+
+/** Replace an element's HTML only when it changed, so polling never resets scroll, focus or open <details>. */
+function setHtml(el, html) {
+  if (el.__html === html) return false;
+  el.__html = html;
+  el.innerHTML = html;
+  return true;
 }
 
 /** Just enough markdown for a task — headings, lists, code, emphasis. */
@@ -181,149 +290,244 @@ function inline(text) {
     .replace(/\[([^\]]+)\]\(([^)\s]+)\)/g, '<a href="$2" rel="noreferrer">$1</a>');
 }
 
+
+const nowSec = () => Math.floor(Date.now() / 1000) + ((state && state.skew) || 0);
+
+/* ------------------------------------------------------------------ data */
+
 async function poll() {
   try {
     const res = await fetch("/api/state");
     state = await res.json();
     // The server's clock is the one the timings were recorded against.
     state.skew = state.now - Math.floor(Date.now() / 1000);
-    $("live").textContent = "live";
+    $("conn").className = "conn";
+    $("conn").lastChild.textContent = "live";
+    if (tab === null) tab = state.batch && state.batch.status === "active" ? "batch" : "tasks";
     render();
     if (selected && !editing) await loadNote(selected, true);
   } catch {
-    $("live").textContent = "server stopped";
+    $("conn").className = "conn off";
+    $("conn").lastChild.textContent = "server stopped";
   }
 }
 
 async function loadNote(slug, quiet) {
   const res = await fetch("/api/task/" + encodeURIComponent(slug));
-  if (!res.ok) { note = null; selected = null; renderView(); return; }
+  if (!res.ok) { note = null; selected = null; renderReader(); renderList(); return; }
   const next = await res.json();
   // Re-rendering identical content would fight the scroll position.
-  if (quiet && note && note.content === next.content && note.locked === next.locked) return;
+  if (quiet && note && note.content === next.content && note.locked === next.locked && note.status === next.status) return;
   note = next;
-  renderView();
+  renderReader();
 }
 
 function select(slug) {
+  if (slug === selected) return;
   if (editing && !confirm("Discard your unsaved edits?")) return;
   editing = false;
   selected = slug;
   note = null;
-  renderSidebar();
+  renderList();
+  renderReader();
   loadNote(slug);
 }
 
 async function save() {
-  saving = true; renderView();
+  saving = true; renderReader();
   const res = await fetch("/api/task/" + encodeURIComponent(selected), {
     method: "PUT", headers: { "content-type": "text/plain" }, body: dirty,
   });
   saving = false;
-  if (!res.ok) { alert(await res.text()); renderView(); return; }
+  if (!res.ok) { alert(await res.text()); renderReader(); return; }
   editing = false;
   await loadNote(selected);
 }
 
-function render() { renderBatch(); renderSidebar(); renderHistory(); }
+/* ------------------------------------------------------------------ views */
 
-function renderSidebar() {
+function setTab(name) {
+  tab = name;
+  history.replaceState(null, "", "#" + name);
+  render();
+}
+
+function render() {
   $("root").textContent = state ? state.root : "";
-  const tasks = state && state.batch ? state.batch.tasks : [];
-  const bySlug = Object.fromEntries(tasks.map((t) => [t.slug, t]));
-  const list = $("notes");
-  if (!state || state.tasks.length === 0) {
-    list.innerHTML = '<div class="empty">No tasks yet.</div>';
-    return;
-  }
-  list.innerHTML = state.tasks.map((n) => {
-    const run = bySlug[n.slug];
-    const pill = run
-      ? `<span class="pill ${STATUS_CLASS[run.status]}">${run.status}</span>`
-      : `<span class="pill s-${esc(n.status)}">${esc(n.status)}</span>`;
-    return `<li><button data-slug="${esc(n.slug)}" aria-current="${n.slug === selected}">
-      <span class="grow">${esc(n.title)}<br><span class="slug">${esc(n.slug)}</span></span>${pill}
-    </button></li>`;
-  }).join("");
-  for (const b of list.querySelectorAll("button")) b.onclick = () => select(b.dataset.slug);
-}
+  for (const b of document.querySelectorAll("nav button")) b.setAttribute("aria-selected", String(b.dataset.tab === tab));
+  for (const name of ["tasks", "batch", "history"]) $("p-" + name).classList.toggle("on", name === tab);
 
-function taskRow(t, nowSec) {
-  const elapsed = t.status === "in-progress" && t.startedAt ? nowSec - t.startedAt : t.seconds;
-  const meta = [secs(elapsed), t.commit].filter(Boolean).join(" · ");
-  return `<div class="task">
-    <span class="id">#${t.id}</span>
-    <span>${esc(t.title)}</span>
-    <span class="pill ${STATUS_CLASS[t.status]}">${t.status}</span>
-    ${meta ? `<span class="meta" style="grid-column:2/-1">${esc(meta)}</span>` : ""}
-    ${t.note ? `<span class="why">${esc(t.note)}</span>` : ""}
-  </div>`;
-}
-
-function renderBatch() {
-  const el = $("batch");
-  if (!state || !state.batch) {
-    el.innerHTML = '<h2>Batch</h2><div class="empty">No batch running.</div>';
-    return;
-  }
   const b = state.batch;
-  const nowSec = Math.floor(Date.now() / 1000) + (state.skew || 0);
-  const done = b.tasks.filter((t) => t.status === "done").length;
-  el.innerHTML = `<h2>Batch — ${b.status}</h2>
-    <div class="empty" style="padding-bottom:4px">${done}/${b.tasks.length} shipped</div>
-    ${b.tasks.map((t) => taskRow(t, nowSec)).join("")}<div style="height:8px"></div>`;
+  $("c-tasks").textContent = state.tasks.length || "";
+  $("c-history").textContent = state.history.length || "";
+  const cb = $("c-batch");
+  cb.textContent = b ? b.tasks.filter((t) => t.status === "done").length + "/" + b.tasks.length : "";
+  cb.className = "count" + (b && b.status === "active" ? " live" : "");
+
+  if (tab === "tasks") { renderList(); if (!note && !selected) renderReader(); }
+  if (tab === "batch") renderBatch();
+  if (tab === "history") renderHistory();
 }
 
-function renderHistory() {
-  const el = $("history");
-  const runs = state ? state.history : [];
-  if (!runs.length) { el.innerHTML = '<h2>History</h2><div class="empty">No finished runs yet.</div>'; return; }
-  el.innerHTML = "<h2>History</h2>" + runs.slice().reverse().map((r) => {
-    const total = r.tasks.reduce((s, t) => s + (t.seconds || 0), 0);
-    const shipped = r.tasks.filter((t) => t.status === "done").length;
-    const when = new Date(r.createdAt * 1000).toLocaleString();
-    return `<div class="run"><div class="head">${esc(when)} · ${r.status} · ${shipped}/${r.tasks.length} · ${secs(total)}</div>
-      ${r.tasks.map((t) => taskRow(t, 0)).join("")}</div>`;
-  }).join("");
+/** What a task is doing right now: the batch's word on it wins over its file status. */
+function runOf(slug) {
+  return state.batch && state.batch.tasks.find((t) => t.slug === slug && t.status !== "reverted");
 }
 
-function renderView() {
-  const el = $("view");
+function renderList() {
+  const counts = { all: state.tasks.length, brainstorm: 0, ready: 0 };
+  for (const t of state.tasks) counts[t.status]++;
+  setHtml($("chips"), ["all", "brainstorm", "ready"].map((f) =>
+    `<button class="chip" data-f="${f}" aria-pressed="${filter === f}">${f === "all" ? "All" : f[0].toUpperCase() + f.slice(1)} ${counts[f]}</button>`
+  ).join(""));
+
+  const q = query.trim().toLowerCase();
+  const shown = state.tasks.filter((t) =>
+    (filter === "all" || t.status === filter) && (!q || t.title.toLowerCase().includes(q) || t.slug.includes(q)));
+
+  let html;
+  if (state.tasks.length === 0) {
+    html = `<div class="empty"><b>No tasks yet</b><br>Capture an idea with<br><code>workflow task new "…"</code></div>`;
+  } else if (shown.length === 0) {
+    html = `<div class="empty">Nothing matches.</div>`;
+  } else {
+    html = shown.map((t) => {
+      const run = runOf(t.slug);
+      const pill = run
+        ? `<span class="pill ${RUN_CLASS[run.status]}">${run.status === "in-progress" ? "running" : "queued · " + run.status}</span>`
+        : `<span class="pill s-${t.status}">${t.status}</span>`;
+      return `<button class="item" data-slug="${esc(t.slug)}" aria-current="${t.slug === selected}">
+        <div class="top"><span class="title">${esc(t.title)}</span>${pill}</div>
+        <div class="slug mono">${esc(t.slug)}</div></button>`;
+    }).join("");
+  }
+  setHtml($("items"), html);
+}
+
+function renderReader() {
+  const el = $("reader");
   if (!selected || !note) {
-    el.innerHTML = '<div class="placeholder">Pick a task to read or edit it.</div>';
+    el.__html = null;
+    el.innerHTML = `<div class="placeholder">${selected ? "Loading…" : "Pick a task to read or edit it."}</div>`;
     return;
   }
-  const bar = `<div class="bar">
-    <b>${esc(note.title)}</b><span class="grow"></span>
-    ${editing
-      ? `<button class="act" id="cancel">Cancel</button><button class="act primary" id="save" ${saving ? "disabled" : ""}>${saving ? "Saving…" : "Save"}</button>`
-      : `<button class="act" id="edit" ${note.locked ? "disabled" : ""}>Edit</button>`}
-  </div>`;
-  const body = editing
-    ? `<textarea id="editor" spellcheck="false"></textarea>`
-    : `<div class="doc">${md(note.content)}</div>`;
-  const locked = note.locked && !editing
-    ? `<div class="note">A subagent is implementing this task right now — editing is locked until it finishes.</div>`
-    : "";
-  el.innerHTML = bar + locked + body;
+  el.__html = null;
+  const run = runOf(note.slug);
+  const pill = run
+    ? `<span class="pill ${RUN_CLASS[run.status]}">${run.status === "in-progress" ? "running" : "batch · " + run.status}</span>`
+    : `<span class="pill s-${note.status}">${note.status}</span>`;
+  const actions = editing
+    ? `<button class="act" id="cancel">Cancel</button><button class="act primary" id="save" ${saving ? "disabled" : ""}>${saving ? "Saving…" : "Save"}</button>`
+    : `<button class="act" id="edit" ${note.locked ? "disabled" : ""}>Edit</button>`;
+  const banner = note.locked && !editing
+    ? `<div class="banner">A subagent is implementing this task right now — editing is locked until it finishes.</div>` : "";
+  const paper = editing ? `<textarea id="editor" spellcheck="false"></textarea>` : `<div class="doc">${md(note.content)}</div>`;
+  el.innerHTML = `<div class="bar"><span class="name">${esc(note.title)}</span>${pill}<span class="grow"></span>${actions}</div>
+    ${banner}<div class="paper" id="paper">${paper}</div>`;
 
   if (editing) {
     const editor = $("editor");
     editor.value = dirty;
     editor.oninput = () => { dirty = editor.value; };
-    $("cancel").onclick = () => { editing = false; renderView(); };
+    $("cancel").onclick = () => { editing = false; renderReader(); };
     $("save").onclick = save;
     editor.focus();
-  } else {
-    const edit = $("edit");
-    if (edit) edit.onclick = () => { editing = true; dirty = note.content; renderView(); };
+  } else if ($("edit")) {
+    $("edit").onclick = () => { editing = true; dirty = note.content; renderReader(); };
   }
 }
 
+function step(t, i, clock) {
+  const live = t.status === "in-progress";
+  const elapsed = live && t.startedAt ? nowSec() - t.startedAt : t.seconds;
+  const exists = state.tasks.some((x) => x.slug === t.slug);
+  const title = exists ? `<button data-open="${esc(t.slug)}">${esc(t.title)}</button>` : esc(t.title);
+  const meta = [elapsed !== undefined ? secs(elapsed) : "", t.commit ? `<span class="mono">${esc(t.commit.slice(0, 9))}</span>` : ""]
+    .filter(Boolean).map((m) => `<span>${m}</span>`).join("");
+  return `<li class="step ${live ? "now" : ""}">
+    <span class="n ${RUN_CLASS[t.status]}">${i + 1}</span>
+    <span class="t">${title}</span>
+    <span class="pill ${RUN_CLASS[t.status]}">${live ? "running" : t.status}</span>
+    ${meta ? `<span class="m">${meta}</span>` : ""}
+    ${t.note ? `<span class="why">${esc(t.note)}</span>` : ""}</li>`;
+}
+
+function segments(tasks) {
+  return `<div class="seg">${tasks.map((t) => `<i class="${t.status === "in-progress" ? "running" : t.status}" title="${esc(t.title)}"></i>`).join("")}</div>`;
+}
+
+function elapsedOf(tasks) {
+  return tasks.reduce((sum, t) => sum + (t.status === "in-progress" && t.startedAt ? nowSec() - t.startedAt : t.seconds || 0), 0);
+}
+
+function renderBatch() {
+  const b = state.batch;
+  if (!b) {
+    setHtml($("batch"), `<div class="big-empty"><b>No batch running</b>
+      Queue ready tasks with <code>workflow batch create "…"</code>.</div>`);
+    return;
+  }
+  const done = b.tasks.filter((t) => t.status === "done").length;
+  const next = b.tasks.find((t) => t.status === "in-progress") || b.tasks.find((t) => t.status === "pending");
+  const hint = { completed: "All tasks finished. Run <code>workflow batch clear</code> to archive it.",
+    stopped: "Stopped. <code>workflow batch resume</code> to continue." }[b.status] || "";
+  setHtml($("batch"), `<div class="card summary">
+      <div class="row"><h1>Current batch</h1><span class="pill s-${b.status}">${b.status}</span>
+        <span class="dim" style="margin-left:auto;font-size:12px">started ${esc(new Date(b.createdAt * 1000).toLocaleString())}</span></div>
+      <div class="stats">
+        <div class="stat"><div class="v">${done}/${b.tasks.length}</div><div class="k">shipped</div></div>
+        <div class="stat"><div class="v">${secs(elapsedOf(b.tasks)) || "0s"}</div><div class="k">elapsed</div></div>
+        ${next && b.status === "active" ? `<div class="stat" style="min-width:0"><div class="v" style="font-size:15px;line-height:30px">${esc(next.title)}</div><div class="k">${next.status === "in-progress" ? "running now" : "up next"}</div></div>` : ""}
+      </div>
+      ${segments(b.tasks)}
+      ${hint ? `<div class="dim" style="font-size:13px">${hint}</div>` : ""}
+    </div>
+    <div class="card"><ol class="steps" style="margin:0">${b.tasks.map((t, i) => step(t, i)).join("")}</ol></div>`);
+}
+
+function renderHistory() {
+  const runs = state.history;
+  if (!runs.length) {
+    setHtml($("history"), `<div class="big-empty"><b>No finished runs yet</b>A batch is archived here when you <code>workflow batch clear</code> it.</div>`);
+    return;
+  }
+  // Keep whichever runs the reader has opened across the 2s polls.
+  const open = new Set([...document.querySelectorAll("details.run[open]")].map((d) => d.dataset.id));
+  setHtml($("history"), runs.slice().reverse().map((r, i) => {
+    const shipped = r.tasks.filter((t) => t.status === "done").length;
+    const id = String(r.createdAt);
+    return `<details class="card run" data-id="${id}" ${open.has(id) || (open.size === 0 && i === 0) ? "open" : ""}>
+      <summary><span class="when">${esc(new Date(r.createdAt * 1000).toLocaleString())}</span>
+        <span class="pill s-${r.status}">${r.status}</span>
+        <span class="sum">${shipped}/${r.tasks.length} shipped · ${secs(elapsedOf(r.tasks)) || "0s"}</span></summary>
+      <div style="padding:0 20px 14px">${segments(r.tasks)}</div>
+      <ol class="steps">${r.tasks.map((t, j) => step(t, j)).join("")}</ol></details>`;
+  }).join(""));
+}
+
+/* ------------------------------------------------------------------ events */
+
+document.querySelector("nav").onclick = (e) => { const b = e.target.closest("button"); if (b) setTab(b.dataset.tab); };
+$("chips").onclick = (e) => { const b = e.target.closest("button"); if (b) { filter = b.dataset.f; renderList(); } };
+$("q").oninput = (e) => { query = e.target.value; renderList(); };
+$("items").onclick = (e) => { const b = e.target.closest("button"); if (b) select(b.dataset.slug); };
+$("p-batch").onclick = $("p-history").onclick = (e) => {
+  const b = e.target.closest("[data-open]");
+  if (b) { setTab("tasks"); select(b.dataset.open); }
+};
+window.addEventListener("keydown", (e) => {
+  if (e.target.matches("input, textarea") || e.metaKey || e.ctrlKey) return;
+  const names = ["tasks", "batch", "history"];
+  if (e.key >= "1" && e.key <= "3") setTab(names[Number(e.key) - 1]);
+  if (e.key === "/" && tab === "tasks") { e.preventDefault(); $("q").focus(); }
+});
+
+const fromHash = location.hash.slice(1);
+if (["tasks", "batch", "history"].includes(fromHash)) tab = fromHash;
 poll();
 setInterval(poll, 2000);
 // Keep the running task's elapsed time ticking between polls.
-setInterval(() => { if (state && state.batch) renderBatch(); }, 1000);
+setInterval(() => { if (state && state.batch && (tab === "batch")) renderBatch(); }, 1000);
 </script>
 </body>
 </html>

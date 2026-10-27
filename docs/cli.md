@@ -127,16 +127,20 @@ workflow serve                          # http://127.0.0.1:4242
 workflow serve --port 8080 --host 0.0.0.0
 ```
 
-The page shows three things and refreshes itself every two seconds:
+The page has three tabs (keys `1`–`3`; the tab is kept in the URL hash) and refreshes
+itself every two seconds. Each pane scrolls on its own, so a long task never pushes
+the batch out of view:
 
-- **Tasks** — every task, with its status, in `extras/tasks/`, rendered as markdown.
+- **Tasks** — a searchable list (press `/`), filterable by `brainstorm` / `ready`,
+  next to a reader for the selected task in `extras/tasks/`, rendered as markdown.
   Click one to read it, **Edit** to change it; saving writes straight to the file
   on disk. A note whose task a subagent is implementing right now is **locked** —
   the server rejects the write with `409` rather than change a spec out from under
   a running task. Stop the batch to edit it.
-- **The live batch** — every task with its status, the running task's elapsed time
-  ticking, plus durations and commits as they land.
-- **History** — past runs read from `extras/batch/history`.
+- **Batch** — progress bar, shipped count and elapsed time, then every task in order
+  with its status, the running task's clock ticking, and durations and commits as
+  they land. Click a task to open it.
+- **History** — past runs from `extras/batch/history`, each collapsible.
 
 It is a developer tool: it writes to the project's files and has no
 authentication, so it binds to loopback unless you pass `--host`. It never mutates
