@@ -21,7 +21,7 @@ self-contained.
 
 ## `workflow init`
 
-Scaffold the workflow structure into the current project: `extras/brainstorm/`,
+Scaffold the workflow structure into the current project: `extras/tasks/`,
 `extras/manifesto/MANIFESTO.md`, `extras/internals/INTERNALS.md` (the
 code-structure map), `docs/`, a starter `README.md`, and a `CLAUDE.md` that points
 the agent at the manifesto and the internals map. Idempotent — existing files are
@@ -40,17 +40,24 @@ the developer, and the internals map from the codebase.
 | `workflow manifesto info` | Print instructions for writing `extras/manifesto/MANIFESTO.md` — the sections to include and the questions to ask the developer. The agent runs this, then writes the file; it does not invent the vision or guidelines. |
 | `workflow internals info` | Print instructions for writing `extras/internals/INTERNALS.md` — the sections to include and what to inspect/confirm. The agent runs this, then writes the file from the actual codebase. |
 
-## `workflow brainstorm`
+## `workflow task`
+
+A **task** is a markdown note in `extras/tasks/` with a `status:` line of frontmatter:
+`brainstorm` (a raw idea — no implementation detail, may be refined) or `ready`
+(specified; implementable from the note alone, and the only status a batch accepts).
+A note with no status reads as `brainstorm`. Batch execution state is not a task
+status — the batch owns it.
 
 | Command | Description |
 |---|---|
-| `workflow brainstorm new "<title>"` | Create `extras/brainstorm/<slug>.md` seeded with the title heading. Prints the path. |
-| `workflow brainstorm list` | List notes with their titles. |
-| `workflow brainstorm delete "<name>"` | Delete `extras/brainstorm/<slug>.md` (accepts the note's title or slug). Errors non-zero if no such note exists. Use it to clear a note once its design has been implemented. |
+| `workflow task new "<title>"` | Create `extras/tasks/<slug>.md` as a `brainstorm`, seeded with Idea / Why / Open questions sections. Prints the path. |
+| `workflow task list [--status <status>]` | List tasks with their status, optionally only one status. |
+| `workflow task set <name> <status>` | Set the status (`brainstorm` or `ready`). Moving to `ready` fails unless the **Goal**, **Approach**, **Where it lives** and **Out of scope** sections are present and non-empty; moving back to `brainstorm` is always allowed. |
+| `workflow task delete "<name>"` | Delete `extras/tasks/<slug>.md` (accepts the task's title or slug). Errors non-zero if no such task exists. Use it to clear a task once its design has been implemented. |
 
 ## `workflow batch`
 
-A **batch** runs several brainstorm notes back to back, one task at a time. Its
+A **batch** runs several tasks back to back, one task at a time. Its
 state lives in `extras/batch/`, written only by `src/lib/batch-store.ts`. The
 notes themselves are the task specs — a batch references them, it does not copy
 them.
@@ -61,7 +68,7 @@ then cleared. This is what stops a second run being queued on top of a live one.
 
 | Command | Description |
 |---|---|
-| `workflow batch create "<name>" …` | Queue the named notes (title or slug) as tasks. **Argument order is execution order.** Validates that each note exists and that none is listed twice; assigns each task a stable id. |
+| `workflow batch create "<name>" …` | Queue the named **ready** tasks (title or slug). Refuses a task that is still a `brainstorm`. **Argument order is execution order.** Validates that each note exists and that none is listed twice; assigns each task a stable id. |
 | `workflow batch status [--json]` | Print the batch, its status (`active`, `stopped`, `completed`) and every task. `--json` emits the raw record. |
 | `workflow batch next [--json]` | Print the next task to execute — the first pending one, and only while the batch is active. |
 | `workflow batch start <id>` | Mark a task in progress. Refuses unless it is the next pending task and nothing else is running: this is what keeps a batch sequential. |
@@ -70,9 +77,9 @@ then cleared. This is what stops a second run being queued on top of a live one.
 | `workflow batch stop [--reason <why>]` | Halt execution. An in-progress task returns to `pending` (with a note) so a resumed batch re-runs it from a known state. |
 | `workflow batch resume` | Return a stopped batch to `active`. Failed tasks stay failed; the run picks up at the next pending task. |
 | `workflow batch add "<name>" … [--before <id>]` | Queue more notes as pending tasks, at the end or just before a pending task. New tasks get fresh ids (existing ids never shift); refuses a note already in the batch, or a completed batch. |
-| `workflow batch remove <id…>` | Drop queued tasks. Only `pending` tasks can be removed; the remaining ids do not shift. Their brainstorm notes are left alone. |
+| `workflow batch remove <id…>` | Drop queued tasks. Only `pending` tasks can be removed; the remaining ids do not shift. Their tasks are left alone. |
 | `workflow batch revert <id>` | Mark a `done` task reverted and print `git revert --no-edit <sha>` for it. The CLI never runs git itself — it records state and tells you the command. |
-| `workflow batch clear` | Archive the batch to the history and delete the live file, freeing the slot. Refuses while the batch is `active` (stop it first). Deletes the brainstorm notes of tasks that shipped and keeps the rest. |
+| `workflow batch clear` | Archive the batch to the history and delete the live file, freeing the slot. Refuses while the batch is `active` (stop it first). Deletes the tasks of tasks that shipped and keeps the rest. |
 | `workflow batch history [--json]` | Show past runs: each task, how long it took, and the commit it produced. |
 
 Task statuses are `pending`, `in-progress`, `done`, `failed`, and `reverted`. A
@@ -113,7 +120,7 @@ Everything else — a task's spec path — is derived from its slug.
 
 ## `workflow serve`
 
-Start a local web preview of the project's brainstorm notes and its batch run.
+Start a local web preview of the project's tasks and its batch run.
 
 ```bash
 workflow serve                          # http://127.0.0.1:4242
@@ -122,7 +129,7 @@ workflow serve --port 8080 --host 0.0.0.0
 
 The page shows three things and refreshes itself every two seconds:
 
-- **Brainstorms** — every note in `extras/brainstorm/`, rendered as markdown.
+- **Tasks** — every task, with its status, in `extras/tasks/`, rendered as markdown.
   Click one to read it, **Edit** to change it; saving writes straight to the file
   on disk. A note whose task a subagent is implementing right now is **locked** —
   the server rejects the write with `409` rather than change a spec out from under

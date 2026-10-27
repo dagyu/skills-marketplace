@@ -7,16 +7,16 @@ registered in `hooks/hooks.json`) injects the overview skill into every session.
 
 ## workflow-overview (bootstrap)
 
-Injected at session start. Explains the flow (optional brainstorm, then implement
+Injected at session start. Explains the flow (optional refinement, then implement
 directly — or a batch when several notes are queued), lists the `workflow` CLI
 commands, sets the prime directive (read `MANIFESTO.md` first), and tells the
 agent which skill to invoke when.
 
-## brainstorming
+## tasks
 
-Refines a rough idea into an agreed design. Reads the manifesto and the internals
+Captures ideas as tasks and refines them. A task is a `brainstorm` (a raw idea: why it matters and open questions, no implementation detail) or `ready` (a specified design). Capturing an idea is cheap and reads nothing. Refining a task into `ready` reads the manifesto and the internals
 map, explores context, asks clarifying questions, proposes approaches, and — only
-after the developer agrees — captures a note with `workflow brainstorm new`,
+after the developer agrees — writes the design into the task and promotes it with `workflow task set <name> ready`,
 including a **Where it lives** section carrying over the files to touch and the
 manifesto rules that constrain the change. **Optional**: when the change is already
 clear, the agent skips it and implements directly. After the note is approved, the
@@ -29,7 +29,7 @@ about the rules or the layout, and then the note is corrected.
 
 ## batch-execution
 
-Runs several brainstorm notes as one unattended queue. Reviews each note against
+Runs several tasks as one unattended queue. Reviews each note against
 three tests — clear, executable, right-sized — and reports a verdict per note;
 anything too big is split by the developer, anything vague is clarified **into the
 note**, because the subagent that implements it sees only the note. The agent then

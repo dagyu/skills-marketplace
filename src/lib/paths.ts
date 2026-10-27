@@ -9,7 +9,7 @@ import { join } from "node:path";
 export interface ProjectPaths {
   root: string;
   extrasDir: string;
-  brainstormDir: string;
+  tasksDir: string;
   batchDir: string;
   /** The live batch, if one exists. */
   batchFile: string;
@@ -24,9 +24,9 @@ export interface ProjectPaths {
   claudeFile: string;
 }
 
-/** Project-relative path of the brainstorm note a slug names. */
-export function notePath(slug: string): string {
-  return `extras/brainstorm/${slug}.md`;
+/** Project-relative path of the task a slug names. */
+export function taskPath(slug: string): string {
+  return `extras/tasks/${slug}.md`;
 }
 
 export function resolveProjectPaths(root: string = process.cwd()): ProjectPaths {
@@ -37,7 +37,7 @@ export function resolveProjectPaths(root: string = process.cwd()): ProjectPaths 
   return {
     root,
     extrasDir,
-    brainstormDir: join(extrasDir, "brainstorm"),
+    tasksDir: join(extrasDir, "tasks"),
     batchDir,
     batchFile: join(batchDir, "batch"),
     historyFile: join(batchDir, "history"),

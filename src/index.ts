@@ -1,21 +1,21 @@
 #!/usr/bin/env bun
 import { runBatch } from "./commands/batch.ts";
-import { runBrainstorm } from "./commands/brainstorm.ts";
 import { runInternals, runManifesto } from "./commands/docinfo.ts";
 import { runInit } from "./commands/init.ts";
 import { runServe } from "./commands/serve.ts";
+import { runTask } from "./commands/task.ts";
 import { CliError, out } from "./lib/cli.ts";
 import { versionString } from "./version.ts";
 
-const USAGE = `workflow — an optional-brainstorm → implement workflow CLI
+const USAGE = `workflow — a task → implement workflow CLI
 
 Usage:
   workflow init                 Scaffold extras/ and docs/ into this project
   workflow manifesto info       How to populate extras/manifesto/MANIFESTO.md
   workflow internals info       How to populate extras/internals/INTERNALS.md
-  workflow brainstorm <cmd>     Manage brainstorm notes (new, list, delete)
-  workflow batch <cmd>          Run a queue of brainstorms back to back (create, status, …)
-  workflow serve [--port <n>]   Preview and edit brainstorms, and watch a batch run, in a browser
+  workflow task <cmd>           Manage tasks and their status (new, list, set, delete)
+  workflow batch <cmd>          Run a queue of ready tasks back to back (create, status, …)
+  workflow serve [--port <n>]   Preview and edit tasks, and watch a batch run, in a browser
 
 Options:
   -v, --version                 Print the version and build time
@@ -40,8 +40,8 @@ async function main(argv: string[]): Promise<number> {
       case "internals":
         await runInternals(rest);
         return 0;
-      case "brainstorm":
-        runBrainstorm(rest);
+      case "task":
+        runTask(rest);
         return 0;
       case "batch":
         runBatch(rest);

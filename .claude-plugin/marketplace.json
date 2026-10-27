@@ -7,7 +7,7 @@
     {
       "name": "workflow",
       "source": "./",
-      "description": "Brainstorm (optional) → implement workflow: a Bun CLI for brainstorm notes plus guiding skills."
+      "description": "Task → implement workflow: a Bun CLI for tasks plus guiding skills."
     }
   ]
 }

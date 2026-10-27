@@ -2,7 +2,7 @@
   "name": "workflow",
   "version": "0.1.0",
   "type": "module",
-  "description": "A lightweight brainstorm (optional) → implement workflow: a Bun CLI plus Claude Code skills that raise software-development quality.",
+  "description": "A lightweight task → implement workflow: a Bun CLI plus Claude Code skills that raise software-development quality.",
   "bin": {
     "workflow": "./src/index.ts"
   },

@@ -12,7 +12,7 @@ binary works in any project.
 
 The CLI owns:
 
-- **Brainstorm notes** — markdown files in `extras/brainstorm/`.
+- **Tasks** — markdown files in `extras/tasks/`.
 - **Batches** — `extras/batch/`: an ordered queue of notes to implement back to
   back, the rules that keep the run sequential and single, and the history of
   finished runs. Both files use a compact line-oriented format rather than JSON,
@@ -28,8 +28,8 @@ The CLI owns:
 Four skills, packaged as a Claude Code plugin, guide the agent:
 
 - **workflow-overview** — injected at session start; explains the flow (optional
-  brainstorm, then implement directly), lists the CLI, and points at the manifesto.
-- **brainstorming** — rough idea → agreed design note (optional; skip when the
+  refine a task, then implement directly), lists the CLI, and points at the manifesto.
+- **tasks** — raw idea → agreed design (`brainstorm` → `ready`) (optional; skip when the
   change is already clear).
 - **batch-execution** — several notes → one reviewed, ordered, unattended run.
 - **internals** — read `extras/internals/INTERNALS.md` to find the right code
@@ -48,7 +48,7 @@ structured place to *record the work*. Two project-owned documents sit above bot
 the manifesto (`extras/manifesto/MANIFESTO.md`) is the source of guidelines every
 phase must honour, and the internals map (`extras/internals/INTERNALS.md`) — an
 extension of `CLAUDE.md` — tells the agent where the code lives so changes land in
-the right place. Both are read when a brainstorm note is written, and what they
+the right place. Both are read when a task is written, and what they
 mean for that change is written into the note; implementing the note then reads
 only the note, so a batch of ten does not reload both documents ten times.
 

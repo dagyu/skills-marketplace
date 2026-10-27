@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, test } from "bun:test";
-import { existsSync, mkdtempSync, readFileSync, rmSync } from "node:fs";
+import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
@@ -21,9 +21,17 @@ async function wf(...args: string[]): Promise<{ code: number; stdout: string; st
   return { code, stdout, stderr };
 }
 
-/** Create brainstorm notes so they can be queued. */
+/** Create ready tasks so they can be queued. */
 async function notes(...titles: string[]): Promise<void> {
-  for (const title of titles) await wf("brainstorm", "new", title);
+  for (const title of titles) {
+    const file = (await wf("task", "new", title)).stdout.trim();
+    writeFileSync(
+      file,
+      readFileSync(file, "utf8") +
+        "\n## Goal\nx\n\n## Approach\nx\n\n## Where it lives\nx\n\n## Out of scope\nx\n",
+    );
+    await wf("task", "set", title, "ready");
+  }
 }
 
 beforeEach(() => {
@@ -35,6 +43,13 @@ afterEach(() => {
 });
 
 describe("workflow batch create", () => {
+  test("refuses a task that is still a brainstorm", async () => {
+    await wf("task", "new", "Half baked");
+    const res = await wf("batch", "create", "half-baked");
+    expect(res.code).toBe(1);
+    expect(res.stderr).toContain("not ready");
+  });
+
   test("queues notes in the given order, taking titles from the notes", async () => {
     await notes("Add login", "Rate limit the API");
     const created = await wf("batch", "create", "rate-limit-the-api", "Add login");
@@ -46,7 +61,7 @@ describe("workflow batch create", () => {
   test("rejects a note that does not exist", async () => {
     const res = await wf("batch", "create", "nope");
     expect(res.code).toBe(1);
-    expect(res.stderr).toContain("No brainstorm note");
+    expect(res.stderr).toContain("No task");
   });
 
   test("rejects the same note twice", async () => {
@@ -80,7 +95,7 @@ describe("workflow batch status / next", () => {
 
     const next = JSON.parse((await wf("batch", "next", "--json")).stdout);
     expect(next.id).toBe(1);
-    expect(next.path).toBe("extras/brainstorm/add-login.md");
+    expect(next.path).toBe("extras/tasks/add-login.md");
   });
 });
 
@@ -135,7 +150,7 @@ describe("developer controls", () => {
 
     expect((await wf("batch", "remove", "2")).stdout).toContain("Removed #2");
     expect((await wf("batch", "status")).stdout).not.toContain("Rate limit");
-    expect(existsSync(join(project, "extras/brainstorm/rate-limit-the-api.md"))).toBe(true);
+    expect(existsSync(join(project, "extras/tasks/rate-limit-the-api.md"))).toBe(true);
   });
 
   test("revert prints the git command that undoes the task", async () => {
@@ -159,10 +174,10 @@ describe("workflow batch clear", () => {
     await wf("batch", "stop");
 
     const cleared = await wf("batch", "clear");
-    expect(cleared.stdout).toContain("deleted extras/brainstorm/add-login.md");
-    expect(cleared.stdout).toContain("kept    extras/brainstorm/rate-limit-the-api.md");
-    expect(existsSync(join(project, "extras/brainstorm/add-login.md"))).toBe(false);
-    expect(existsSync(join(project, "extras/brainstorm/rate-limit-the-api.md"))).toBe(true);
+    expect(cleared.stdout).toContain("deleted extras/tasks/add-login.md");
+    expect(cleared.stdout).toContain("kept    extras/tasks/rate-limit-the-api.md");
+    expect(existsSync(join(project, "extras/tasks/add-login.md"))).toBe(false);
+    expect(existsSync(join(project, "extras/tasks/rate-limit-the-api.md"))).toBe(true);
 
     expect((await wf("batch", "create", "rate-limit-the-api")).code).toBe(0);
   });

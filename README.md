@@ -1,24 +1,24 @@
 # workflow
 
-A lightweight **brainstorm (optional) → implement** workflow for coding agents,
+A lightweight **task → implement** workflow for coding agents,
 inspired by [superpowers](https://github.com/obra/superpowers). It combines two
 layers:
 
 1. **A `workflow` CLI** (TypeScript, run with [Bun](https://bun.sh)) — the data
-   layer. It manages brainstorm notes and batch runs on disk, plus the
+   layer. It manages tasks and batch runs on disk, plus the
    manifesto/internals scaffolding.
 2. **A set of skills** (a Claude Code plugin) — the process layer. They guide the
-   agent to brainstorm when useful, implement directly, run a batch of
-   brainstorms unattended, and enforce the rules: manifesto guidelines, honest
+   agent to capture and refine tasks when useful, implement directly, run a batch of
+   ready tasks unattended, and enforce the rules: manifesto guidelines, honest
    docs, developer-confirmed commits.
 
 ## The flow
 
 | Step | What happens | Output |
 |---|---|---|
-| **Brainstorm** (optional) | Refine a rough idea into an agreed design. Skip it when the change is already clear. | A markdown note in `extras/brainstorm/`. |
-| **Implement** | The coding agent builds the change directly — from the brainstorm note or straight from the request: code → confirm → docs → commit. | Working code, updated docs, one commit; the note deleted once implemented. |
-| **Batch** (optional) | Several notes at once: the agent reviews each one, clarifies it, orders them, and — on a single approval — implements them one after another with a subagent per task. | One commit per task, run sequentially; the batch state in `extras/batch/`. |
+| **Task** (optional) | Capture a raw idea (`brainstorm`), then refine it into an agreed design (`ready`). Skip it when the change is already clear. | A markdown note in `extras/tasks/` with a status. |
+| **Implement** | The coding agent builds the change directly — from the task or straight from the request: code → confirm → docs → commit. | Working code, updated docs, one commit; the note deleted once implemented. |
+| **Batch** (optional) | Several ready tasks at once: the agent reviews each one, clarifies it, orders them, and — on a single approval — implements them one after another with a subagent per task. | One commit per task, run sequentially; the batch state in `extras/batch/`. |
 
 `extras/manifesto/MANIFESTO.md` holds the project's vision and non-negotiable
 guidelines; every change must respect it.
@@ -28,7 +28,7 @@ guidelines; every change must respect it.
 ```
 <project>/
 ├── extras/
-│   ├── brainstorm/          # one markdown note per idea
+│   ├── tasks/               # one markdown note per task; status: brainstorm | ready
 │   ├── batch/batch          # the current batch run, if any    ┐ both written on
 │   ├── batch/history        # finished runs: tasks, times, shas ┘ demand by `batch`
 │   ├── manifesto/MANIFESTO.md   # vision + guidelines (stub → `workflow manifesto info`)
@@ -64,9 +64,9 @@ workflow --version                             # print version + build time
 workflow init                                  # scaffold extras/ and docs/
 workflow manifesto info                        # how to populate MANIFESTO.md (then write it)
 workflow internals info                        # how to populate INTERNALS.md (then write it)
-workflow brainstorm new "Add login"            # create a brainstorm note
-workflow brainstorm list
-workflow brainstorm delete "Add login"         # remove a note once it is implemented
+workflow task new "Add login"            # create a task
+workflow task list
+workflow task delete "Add login"         # remove a note once it is implemented
 
 workflow batch create "Add login" "Cache API"  # queue notes as one run, in execution order
 workflow batch status                          # where the run is
@@ -84,7 +84,7 @@ this one is cleared.
 
 ## Watching a run
 
-`workflow serve` opens a local page listing every brainstorm note — click to read
+`workflow serve` opens a local page listing every task — click to read
 it as rendered markdown, **Edit** to change it, and the save writes the file
 itself. The same page shows the live batch (task statuses, the running task's
 elapsed time, commits as they land) and the history of past runs, refreshing

@@ -1,11 +1,11 @@
 ---
 name: batch-execution
-description: "Use when the developer wants several brainstorm notes built in one unattended run rather than one at a time. Reviews each note (clear, executable, right-sized), clarifies what is vague, orders the work, and executes it sequentially with one subagent per task. Triggers: \"run all my brainstorms\", \"batch these ideas\", \"execute these one after another\", \"build everything in extras/brainstorm\"."
+description: "Use when the developer wants several tasks built in one unattended run rather than one at a time. Reviews each task (clear, executable, right-sized), clarifies what is vague, orders the work, and executes it sequentially with one subagent per task. Triggers: \"run all my brainstorms\", \"batch these ideas\", \"execute these one after another\", \"build everything in extras/brainstorm\"."
 ---
 
 # Batch Execution
 
-Turn a set of approved brainstorm notes into a queue of tasks and build them back
+Turn a set of approved tasks into a queue of tasks and build them back
 to back, one subagent at a time. The developer approves once, up front; the batch
 then runs without stopping for each change.
 
@@ -15,7 +15,7 @@ select ─► review (gate) ─► clarify ─► order ─► approve (gate) �
 
 ## When to use
 
-- The developer has several brainstorm notes and wants them all implemented.
+- The developer has several tasks and wants them all implemented.
 - Use it from two notes upward. For a single note, skip this skill and implement
   directly (see workflow-overview) — the review overhead is not worth it.
 
@@ -47,8 +47,9 @@ ones, and your own context stays small enough to orchestrate the whole run.
 
 ## 1. Select
 
-Run `workflow brainstorm list` and have the developer pick the notes. Echo the
-exact list back before reviewing it.
+Run `workflow task list --status ready` and have the developer pick the tasks.
+Echo the exact list back before reviewing it. Only `ready` tasks can be queued: a
+`brainstorm` is a raw idea and must be refined first (see the **tasks** skill).
 
 The notes are the only input this batch needs. `MANIFESTO.md` and `INTERNALS.md`
 were read when each note was written and their bearing on the change is captured
@@ -81,8 +82,9 @@ each, and let the developer decide. They may split differently, defer a piece, o
 insist on batching it as-is — that is their call; if they do insist, say plainly
 why the size is risky and proceed. Once a split is agreed:
 
-1. `workflow brainstorm new "<title>"` for each piece, writing its design in.
-2. `workflow brainstorm delete "<original>"` to retire the oversized note.
+1. `workflow task new "<title>"` for each piece, writing its design in and then
+   `workflow task set <name> ready` (new tasks start as `brainstorm`).
+2. `workflow task delete "<original>"` to retire the oversized note.
 
 ## 4. Clarify
 
@@ -159,7 +161,7 @@ instead of one per task. Skip it when nothing structural moved.
 Then, when `workflow batch status` reads *completed*, summarise what shipped (task,
 commit, how long it took — one line each), and run `workflow batch clear`. That
 appends the run to `extras/batch/history` — the permanent record of which tasks
-ran, how long each took, and what each committed — deletes the brainstorm notes of
+ran, how long each took, and what each committed — deletes the tasks of
 the tasks that shipped, and keeps the notes of anything removed, failed, or
 reverted so they can be queued again later.
 
@@ -186,8 +188,8 @@ create the batch. Two things follow from it:
 - **Revert** — `workflow batch revert <id>` prints the `git revert` command for
   that task's commit. Run it only after the developer confirms, then commit the
   revert. Warn them if later tasks built on the one being reverted.
-- **Remove** — `workflow batch remove <id…>` drops queued tasks. Their brainstorm
-  notes stay in `extras/brainstorm/` for a future batch.
+- **Remove** — `workflow batch remove <id…>` drops queued tasks. Their tasks
+  stay in `extras/tasks/` for a future batch.
 
 ## Red flags — STOP
 

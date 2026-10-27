@@ -4,9 +4,9 @@ Guidance for coding agents working in this repository.
 
 ## Workflow
 
-This project is developed with the **workflow** tool: an optional brainstorm to
+This project is developed with the **workflow** tool: an optional refinement to
 agree on a design, then the coding agent implements directly (no task tracker, no
-separate planning phase). Brainstorm when the idea is rough; otherwise build it.
+separate planning phase). Refine a rough idea into a ready task first; otherwise build it.
 Do not commit before docs are updated and the developer confirms. The
 `workflow-overview` skill is injected each session and explains which skill to
 use when.
@@ -21,7 +21,7 @@ use when.
   you reach for the right module the first time, and keep it up to date when the
   structure changes.
 
-**Exception — implementing a brainstorm note.** Both files were read when the note
+**Exception — implementing a task.** Both files were read when the note
 was written and their bearing on the change is recorded in it. Build the note from
 the note alone; re-read these files only if it proves wrong about the rules or the
 layout, and then fix the note.
@@ -31,10 +31,10 @@ real work: run `workflow manifesto info` / `workflow internals info` for
 instructions, then write the manifesto by interviewing the developer and the
 internals map from the codebase — do not invent them.
 
-## Brainstorm notes and batches are managed by the CLI
+## Tasks and batches are managed by the CLI
 
-Manage brainstorm notes through the `workflow` CLI (run `workflow` with no
-arguments for usage), rather than hand-creating files in `extras/brainstorm/`.
+Manage tasks through the `workflow` CLI (run `workflow` with no
+arguments for usage), rather than hand-creating files in `extras/tasks/`.
 
 When several notes should be built in one unattended run, use the
 **batch-execution** skill and `workflow batch` — never hand-edit

@@ -53,7 +53,7 @@ export async function runInit(): Promise<void> {
   const p = resolveProjectPaths();
   out("Scaffolding workflow structure:");
 
-  ensureDir(p.brainstormDir);
+  ensureDir(p.tasksDir);
   ensureDir(p.internalsDir);
   ensureDir(p.docsDir);
 
@@ -66,5 +66,5 @@ export async function runInit(): Promise<void> {
   out("\nDone. MANIFESTO.md and INTERNALS.md are stubs — populate them first:");
   out("  - run `workflow manifesto info`, then write it by interviewing the developer");
   out("  - run `workflow internals info`, then write it from the codebase");
-  out("Then brainstorm with the brainstorming skill (optional) and implement directly.");
+  out("Then capture ideas with `workflow task new`, refine them to ready, and implement.");
 }

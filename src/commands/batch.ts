@@ -4,12 +4,13 @@ import { parseArgs } from "node:util";
 import { BatchStore } from "../lib/batch-store.ts";
 import { CliError, out } from "../lib/cli.ts";
 import { extractTitle } from "../lib/markdown.ts";
-import { notePath, resolveProjectPaths } from "../lib/paths.ts";
+import { resolveProjectPaths, taskPath } from "../lib/paths.ts";
 import { slugify } from "../lib/slug.ts";
+import { readStatus } from "../lib/task-file.ts";
 import type { Batch, BatchTask, BatchTaskSpec } from "../types.ts";
 
 const USAGE = `Usage:
-  workflow batch create <name…>            Queue brainstorm notes as tasks, in execution order
+  workflow batch create <name…>            Queue ready tasks, in execution order
   workflow batch status [--json]           Show the batch and its tasks
   workflow batch next [--json]             Print the task to execute next
   workflow batch start <id>                Mark a task in progress (must be the next one)
@@ -17,7 +18,7 @@ const USAGE = `Usage:
   workflow batch fail <id> --reason <why>  Mark a task failed; stops the batch
   workflow batch stop [--reason <why>]     Halt execution (an in-progress task returns to pending)
   workflow batch resume                    Resume a stopped batch
-  workflow batch add <name…> [--before <id>]  Queue more notes, at the end or before a pending task
+  workflow batch add <name…> [--before <id>]  Queue more ready tasks, at the end or before a pending task
   workflow batch remove <id…>              Drop not-yet-started tasks from the queue
   workflow batch revert <id>               Mark a done task reverted; prints the git command to undo it
   workflow batch clear                     Archive the batch to the history, freeing the slot
@@ -70,20 +71,26 @@ function requireId(raw: string | undefined): number {
   return id;
 }
 
-/** Resolve a note name (title or slug) to a batch task spec, or throw. */
-function resolveNote(name: string): BatchTaskSpec {
+/** Resolve a task name (title or slug) to a batch task spec; it must be ready. */
+function resolveTask(name: string): BatchTaskSpec {
   const p = resolveProjectPaths();
   const slug = slugify(name);
-  const file = join(p.brainstormDir, `${slug}.md`);
+  const file = join(p.tasksDir, `${slug}.md`);
   if (!existsSync(file)) {
-    throw new CliError(`No brainstorm note "${slug}" (looked for ${notePath(slug)}).`);
+    throw new CliError(`No task "${slug}" (looked for ${taskPath(slug)}).`);
   }
-  return { title: extractTitle(readFileSync(file, "utf8")) ?? slug, slug };
+  const content = readFileSync(file, "utf8");
+  if (readStatus(content) !== "ready") {
+    throw new CliError(
+      `Task "${slug}" is not ready. Refine it, then run \`workflow task set ${slug} ready\`.`,
+    );
+  }
+  return { title: extractTitle(content) ?? slug, slug };
 }
 
 /** A task as the agent consumes it: the stored record plus its derived spec path. */
 function withPath(task: BatchTask): BatchTask & { path: string } {
-  return { ...task, path: notePath(task.slug) };
+  return { ...task, path: taskPath(task.slug) };
 }
 
 /** "45s", "3m 20s", "1h 04m" — compact enough to sit at the end of a task line. */
@@ -103,11 +110,11 @@ function batchCreate(rest: string[]): void {
   const names = rest.map((s) => s.trim()).filter((s) => s.length > 0);
   if (names.length === 0) {
     throw new CliError(
-      "At least one brainstorm note is required: workflow batch create <name…>\n" +
+      "At least one ready task is required: workflow batch create <name…>\n" +
         "List them in the order they should be executed.",
     );
   }
-  const specs = names.map(resolveNote);
+  const specs = names.map(resolveTask);
   const seen = new Set<string>();
   for (const spec of specs) {
     if (seen.has(spec.slug)) throw new CliError(`"${spec.slug}" is listed twice.`);
@@ -188,7 +195,7 @@ function batchNext(rest: string[]): void {
 function printTask(t: BatchTask): void {
   out(`#${t.id}  ${t.title}`);
   out(`  status: ${t.status}`);
-  out(`  spec:   ${notePath(t.slug)}`);
+  out(`  spec:   ${taskPath(t.slug)}`);
   if (t.seconds !== undefined) out(`  took:   ${formatSeconds(t.seconds)}`);
   if (t.commit) out(`  commit: ${t.commit}`);
   if (t.note) out(`  note:   ${t.note}`);
@@ -197,7 +204,7 @@ function printTask(t: BatchTask): void {
 function batchStart(rest: string[]): void {
   const task = store().start(requireId(rest[0]));
   out(`Started #${task.id}  ${task.title}`);
-  out(`  spec: ${notePath(task.slug)}`);
+  out(`  spec: ${taskPath(task.slug)}`);
 }
 
 function batchDone(rest: string[]): void {
@@ -257,9 +264,9 @@ function batchAdd(rest: string[]): void {
   });
   const names = positionals.map((s) => s.trim()).filter((s) => s.length > 0);
   if (names.length === 0) {
-    throw new CliError("At least one brainstorm note is required: workflow batch add <name…>");
+    throw new CliError("At least one ready task is required: workflow batch add <name…>");
   }
-  const specs = names.map(resolveNote);
+  const specs = names.map(resolveTask);
   const seen = new Set<string>();
   for (const spec of specs) {
     if (seen.has(spec.slug)) throw new CliError(`"${spec.slug}" is listed twice.`);
@@ -276,7 +283,7 @@ function batchRemove(rest: string[]): void {
   if (rest.length === 0) throw new CliError("At least one task id is required.");
   const removed = store().remove(rest.map(requireId));
   for (const t of removed) out(`Removed #${t.id}  ${t.title}`);
-  out("Their brainstorm notes are untouched — they stay in extras/brainstorm/.");
+  out("Their tasks are untouched — they stay in extras/tasks/.");
 }
 
 function batchRevert(rest: string[]): void {
@@ -298,10 +305,10 @@ function batchClear(): void {
   }
   out("Batch archived to extras/batch/history.");
 
-  // The brainstorm folder is a queue, not an archive: a note whose design shipped
+  // The tasks folder is a queue, not an archive: a task whose design shipped
   // is spent, while anything not implemented stays queued for a future batch.
   for (const task of batch.tasks) {
-    const rel = notePath(task.slug);
+    const rel = taskPath(task.slug);
     const file = join(p.root, rel);
     if (!existsSync(file)) continue;
     if (task.status === "done") {

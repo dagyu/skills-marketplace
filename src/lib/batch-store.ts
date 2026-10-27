@@ -68,7 +68,7 @@ export class BatchStore {
    */
   create(specs: BatchTaskSpec[]): Batch {
     if (specs.length === 0) {
-      throw new CliError("A batch needs at least one brainstorm note.");
+      throw new CliError("A batch needs at least one task.");
     }
     const existing = this.read();
     if (existing) {

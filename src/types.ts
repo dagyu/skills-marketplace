@@ -1,4 +1,10 @@
-/** Types for batch execution — a queue of brainstorm notes run back to back. */
+/** Types for batch execution — a queue of ready tasks run back to back. */
+
+/**
+ * What a task file says about itself. `brainstorm` — a raw idea that may still be
+ * refined; `ready` — specified and batchable. Execution state belongs to the batch.
+ */
+export type TaskStatus = "brainstorm" | "ready";
 
 export type BatchTaskStatus =
   | "pending"
@@ -16,9 +22,9 @@ export type BatchStatus = "active" | "stopped" | "completed";
 export interface BatchTask {
   /** Stable label, assigned at creation. Execution order is the array order. */
   id: number;
-  /** Slug of the source brainstorm note, which is the task's spec. */
+  /** Slug of the source task file, which is the task's spec. */
   slug: string;
-  /** The note's heading, kept so history stays readable after the note is gone. */
+  /** The task's heading, kept so history stays readable after the file is gone. */
   title: string;
   status: BatchTaskStatus;
   /** Epoch seconds at which the task started. */
@@ -42,7 +48,7 @@ export interface Batch {
   tasks: BatchTask[];
 }
 
-/** One entry of `batch create`, resolved from a brainstorm note. */
+/** One entry of `batch create`, resolved from a ready task. */
 export interface BatchTaskSpec {
   title: string;
   slug: string;
